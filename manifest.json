@@ -1,0 +1,13 @@
+{
+  "name": "Complot Map",
+  "short_name": "Complot",
+  "description": "Cartographie interactive des theories du complot",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#e02020",
+  "orientation": "any",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

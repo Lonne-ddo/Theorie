@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e02020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
 <title>Complot Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -80,8 +85,8 @@ var NODES=[
 {id:'prop',label:'PROPAGANDE',type:'main',theme:'prop',desc:"Utilisation des medias, musique, cinema et celebrites pour faconner les opinions et promouvoir l'agenda mondialiste.",tags:['MEDIAS','MUSIQUE','CINEMA'],src:'Doc. Complot 2025'},
 {id:'alim',label:'ALIMENTATION',type:'main',theme:'alim',desc:"Intoxication progressive via la nourriture industrielle : perturbateurs endocriniens, fluorure, insectes, oxyde de graphene.",tags:['PERTURBATEURS','FLUOR'],src:'Doc. Complot 2025'},
 {id:'symb',label:'SYMBOLISME',type:'main',theme:'symb',desc:"Signes utilises par les elites : one eye, damier, Mk Ultra, adrenocrome.",tags:['ONE EYE','MK ULTRA','EPSTEIN'],src:'Doc. Complot 2025'},
-{id:'polit',label:'POLITIQUE',type:'main',theme:'polit',desc:"Le systeme politique comme facade. Opposition controlee, tous acteurs d'un meme script. Le vrai pouvoir est aux elites du WEF.",tags:['WEF','DAVOS'],src:'Doc. Complot 2025'},
-{id:'tech',label:'TECH &\nSURVEILLANCE',type:'main',theme:'tech',desc:"Les grandes entreprises tech comme bras arme du controle : collecte de data, IA comportementale, outils de tracage.",tags:['PALANTIR','GAFAM','IA'],src:'Doc. Complot 2025'},
+{id:'polit',label:'POLITIQUE',type:'main',theme:'polit',desc:"Le systeme politique comme facade. Opposition controlee, tous acteurs d'un meme script.",tags:['WEF','DAVOS'],src:'Doc. Complot 2025'},
+{id:'tech',label:'TECH &\nSURVEILLANCE',type:'main',theme:'tech',desc:"Les grandes entreprises tech comme bras arme du controle : collecte de data, IA comportementale.",tags:['PALANTIR','GAFAM','IA'],src:'Doc. Complot 2025'},
 {id:'cbdc',label:'CBDC',type:'sub',theme:'controle',parent:'controle',desc:"Monnaie numerique de banque centrale permettant de conditionner l'usage de l'argent.",tags:['FINANCE'],src:'Doc. 2025'},
 {id:'credit',label:'CREDIT SOCIAL',type:'sub',theme:'controle',parent:'controle',desc:"Systeme de notation citoyenne base sur les donnees comportementales.",tags:['CHINE'],src:'Doc. 2025'},
 {id:'smart',label:'SMART CITIES',type:'sub',theme:'controle',parent:'controle',desc:"Villes intelligentes pour regrouper la population dans des zones 100% surveillees.",tags:['MOBILITE'],src:'Doc. 2025'},
@@ -95,7 +100,7 @@ var NODES=[
 {id:'neura',label:'NEURALINK',type:'sub',theme:'trans',parent:'trans',desc:"Implant cerebral d'Elon Musk, premier pas vers le controle de la pensee.",tags:['ELON MUSK'],src:'Doc. 2025'},
 {id:'genre',label:'CONFUSION\nGENRES',type:'sub',theme:'trans',parent:'trans',desc:"L'agenda transgenre comme etape prealable a l'androdie.",tags:['AGENDA'],src:'Doc. 2025'},
 {id:'musiq',label:'MUSIQUE CLIPS',type:'sub',theme:'prop',parent:'prop',desc:"Les artistes integreraient des symboles dans leurs clips.",tags:['BEYONCE','EMINEM'],src:'Doc. 2025'},
-{id:'cinema',label:'CINEMA SERIES',type:'sub',theme:'prop',parent:'prop',desc:"Films et series anticipent les changements. Truman Show, Black Mirror, les Simpson.",tags:['SIMPSON'],src:'Doc. 2025'},
+{id:'cinema',label:'CINEMA SERIES',type:'sub',theme:'prop',parent:'prop',desc:"Films et series anticipent les changements. Truman Show, Black Mirror, Simpson.",tags:['SIMPSON'],src:'Doc. 2025'},
 {id:'celebs',label:'CELEBRITES\nAGENTS',type:'sub',theme:'prop',parent:'prop',desc:"Les personnalites publiques seraient des agents de propagande.",tags:['HOLLYWOOD'],src:'Doc. 2025'},
 {id:'pertub',label:'PERTURBATEURS\nENDO',type:'sub',theme:'alim',parent:'alim',desc:"Presents dans emballages et pesticides, affectent hormones et fertilite.",tags:['HORMONES'],src:'Doc. 2025'},
 {id:'fluor',label:'FLUOR\nPINEALE',type:'sub',theme:'alim',parent:'alim',desc:"Le fluorure calcifierait la glande pineale, siege de la conscience.",tags:['EAU'],src:'Doc. 2025'},
@@ -117,8 +122,37 @@ NODES.forEach(function(n){ if(n.type==='main') LINKS.push({source:'center',targe
 var expanded={},gRoot,sim,zoom;
 function getTheme(d){ return d.theme?THEMES[d.theme]:{color:'#e02020',label:'Centre'}; }
 function buildLegend(){ var leg=document.getElementById('legend'); Object.keys(THEMES).forEach(function(k){ var t=THEMES[k]; var div=document.createElement('div'); div.className='leg-item'; div.innerHTML='<div class="leg-dot" style="background:'+t.color+'"></div><span>'+t.label+'</span>'; leg.appendChild(div); }); }
-function initPositions(){ var mains=NODES.filter(function(n){ return n.type==='main'; }); var a=(2*Math.PI)/mains.length; mains.forEach(function(n,i){ n.x=Math.cos(i*a-Math.PI/2)*200; n.y=Math.sin(i*a-Math.PI/2)*200; }); var c=NODES.find(function(n){ return n.id==='center'; }); if(c){ c.x=0; c.y=0; } }
-function visData(){ var vn=NODES.filter(function(n){ return n.type!=='sub'||expanded[n.parent]; }); var ids={}; vn.forEach(function(n){ ids[n.id]=true; }); var vl=LINKS.filter(function(l){ return ids[l.source.id||l.source]&&ids[l.target.id||l.target]; }); return {nodes:vn,links:vl}; }
+function initPositions(){
+  var mains=NODES.filter(function(n){ return n.type==='main'; });
+  var a=(2*Math.PI)/mains.length;
+  mains.forEach(function(n,i){ n.x=Math.cos(i*a-Math.PI/2)*200; n.y=Math.sin(i*a-Math.PI/2)*200; });
+  var c=NODES.find(function(n){ return n.id==='center'; });
+  if(c){ c.x=0; c.y=0; }
+  NODES.filter(function(n){ return n.type==='sub'; }).forEach(function(n){
+    var p=NODES.find(function(p){ return p.id===n.parent; });
+    if(p){ n.x=(p.x||0)+Math.cos(Math.random()*6.28)*80; n.y=(p.y||0)+Math.sin(Math.random()*6.28)*80; }
+  });
+}
+function visData(){
+  var vn=NODES.filter(function(n){ return n.type!=='sub'||expanded[n.parent]; });
+  var ids={}; vn.forEach(function(n){ ids[n.id]=true; });
+  var vl=LINKS.filter(function(l){ return ids[l.source.id||l.source]&&ids[l.target.id||l.target]; });
+  return {nodes:vn,links:vl};
+}
+function spawnSubNodes(parentId){
+  var parent=NODES.find(function(n){ return n.id===parentId; });
+  if(!parent) return;
+  var subs=NODES.filter(function(n){ return n.parent===parentId; });
+  var baseAngle=Math.atan2(parent.y||0,parent.x||0);
+  var spread=Math.PI*0.75;
+  subs.forEach(function(s,i){
+    var t=subs.length>1?i/(subs.length-1):0.5;
+    var angle=baseAngle+(t-0.5)*spread;
+    s.x=(parent.x||0)+Math.cos(angle)*85;
+    s.y=(parent.y||0)+Math.sin(angle)*85;
+    s.vx=0; s.vy=0;
+  });
+}
 function render(){
   var d=visData();
   var lSel=gRoot.selectAll('line.link').data(d.links,function(l){ return (l.source.id||l.source)+'-'+(l.target.id||l.target); });
@@ -133,10 +167,32 @@ function render(){
   enter.each(function(n){ var g=d3.select(this); var lines=n.label.split('\n'); var fs=n.type==='center'?11:n.type==='main'?10:8; var lh=11; var col=n.type==='center'?'#e02020':'#bab6b2'; var totalH=(lines.length-1)*lh; lines.forEach(function(line,i){ g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle').attr('y',-totalH/2+i*lh).attr('font-size',fs).attr('font-family','Space Mono,monospace').attr('font-weight','700').attr('fill',col).attr('pointer-events','none').text(line); }); if(n.type==='main'){ g.append('circle').attr('class','expdot').attr('cx',22).attr('cy',-22).attr('r',3).attr('fill','#111').attr('stroke',getTheme(n).color).attr('stroke-width',.6).attr('pointer-events','none'); } });
   enter.merge(nSel).selectAll('.expdot').attr('fill',function(){ var nd=d3.select(this.parentNode).datum(); return expanded[nd.id]?getTheme(nd).color:'#111'; });
   nSel.exit().remove();
-  sim.nodes(d.nodes); sim.force('link').links(d.links); sim.alpha(.5).restart();
+  sim.nodes(d.nodes); sim.force('link').links(d.links); sim.alpha(.4).restart();
 }
-function tick(){ gRoot.selectAll('line.link').attr('x1',function(l){ return l.source.x; }).attr('y1',function(l){ return l.source.y; }).attr('x2',function(l){ return l.target.x; }).attr('y2',function(l){ return l.target.y; }); gRoot.selectAll('g.node').attr('transform',function(n){ return 'translate('+n.x+','+n.y+')'; }); }
-function onClick(n){ if(n.type==='main'){ expanded[n.id]=!expanded[n.id]; render(); } openPanel(n); }
+function clusterForce(alpha){
+  NODES.forEach(function(n){
+    if(n.type==='sub'&&expanded[n.parent]){
+      var p=NODES.find(function(p){ return p.id===n.parent; });
+      if(p&&p.x!==undefined){
+        n.vx-=(n.x-p.x)*alpha*0.15;
+        n.vy-=(n.y-p.y)*alpha*0.15;
+      }
+    }
+  });
+}
+function tick(){
+  gRoot.selectAll('line.link').attr('x1',function(l){ return l.source.x; }).attr('y1',function(l){ return l.source.y; }).attr('x2',function(l){ return l.target.x; }).attr('y2',function(l){ return l.target.y; });
+  gRoot.selectAll('g.node').attr('transform',function(n){ return 'translate('+n.x+','+n.y+')'; });
+}
+function onClick(n){
+  if(n.type==='main'){
+    var wasExpanded=expanded[n.id];
+    expanded[n.id]=!expanded[n.id];
+    if(!wasExpanded) spawnSubNodes(n.id);
+    render();
+  }
+  openPanel(n);
+}
 function openPanel(n){ var th=getTheme(n); document.getElementById('panel-bar').style.background=th.color; document.getElementById('panel-icon').textContent=''; document.getElementById('panel-title').textContent=n.label.replace('\n',' '); document.getElementById('panel-sub').textContent=n.theme?th.label:'CONCEPT CENTRAL'; document.getElementById('panel-desc').textContent=n.desc||''; document.getElementById('panel-tags').innerHTML=(n.tags||[]).map(function(t){ return '<span class="ptag">'+t+'</span>'; }).join(''); document.getElementById('panel-src').textContent='SOURCE - '+(n.src||''); document.getElementById('panel').classList.add('open'); document.getElementById('panel-close').style.display='flex'; }
 function closePanel(){ document.getElementById('panel').classList.remove('open'); document.getElementById('panel-close').style.display='none'; }
 var tip=document.getElementById('tooltip');
@@ -153,8 +209,15 @@ window.addEventListener('load',function(){
   svgEl.call(zoom).on('dblclick.zoom',null);
   svgEl.call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2));
   svgEl.on('click',function(){ closePanel(); });
-  sim=d3.forceSimulation().force('link',d3.forceLink().id(function(n){ return n.id; }).distance(function(l){ return l.ltype==='sub'?90:185; }).strength(.9)).force('charge',d3.forceManyBody().strength(function(n){ return n.type==='center'?-700:n.type==='main'?-400:-160; })).force('center',d3.forceCenter(0,0)).force('collide',d3.forceCollide().radius(function(n){ return n.type==='center'?70:n.type==='main'?55:38; })).on('tick',tick);
+  sim=d3.forceSimulation()
+    .force('link',d3.forceLink().id(function(n){ return n.id; }).distance(function(l){ return l.ltype==='sub'?80:185; }).strength(function(l){ return l.ltype==='sub'?1.5:.9; }))
+    .force('charge',d3.forceManyBody().strength(function(n){ return n.type==='center'?-700:n.type==='main'?-400:-120; }))
+    .force('center',d3.forceCenter(0,0))
+    .force('collide',d3.forceCollide().radius(function(n){ return n.type==='center'?70:n.type==='main'?55:32; }))
+    .force('cluster',clusterForce)
+    .on('tick',tick);
   render();
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('/sw.js'); }
 });
 </script>
 </body>
