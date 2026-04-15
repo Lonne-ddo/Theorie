@@ -7,474 +7,164 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#080b0f;
-  --surface:#0d1117;
-  --surface2:#131920;
-  --border:rgba(255,255,255,0.07);
-  --text:#e8eaf0;
-  --muted:#6b7280;
-  --green:#00e5a0;
-  --blue:#00b8d4;
-  --red:#ff4d6d;
-  --yellow:#f7c948;
-  --purple:#a855f7;
-  --pink:#f472b6;
-  --orange:#fb923c;
-  --slate:#64748b;
-  --font-title:'Syne',sans-serif;
-  --font-mono:'Space Mono',monospace;
-}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
+html,body{width:100%;height:100%;overflow:hidden;background:#050505;color:#f0ece8;font-family:'Syne',sans-serif}
 #app{position:relative;width:100vw;height:100vh;display:flex}
 #canvas{flex:1;position:relative;overflow:hidden}
-svg{width:100%;height:100%;cursor:grab}
-svg.dragging{cursor:grabbing}
-
-/* Panel */
-#panel{
-  width:0;overflow:hidden;
-  background:var(--surface);
-  border-left:0.5px solid var(--border);
-  transition:width .3s ease;
-  display:flex;flex-direction:column;
-  flex-shrink:0;
-}
+#svg{width:100%;height:100%;display:block;cursor:grab}
+#svg:active{cursor:grabbing}
+#header{position:absolute;top:22px;left:24px;z-index:10;pointer-events:none}
+#logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#e02020;letter-spacing:.04em}
+#logo span{color:#f0ece8;opacity:.4}
+#tagline{font-size:10px;color:#3a3a3a;font-family:'Space Mono',monospace;margin-top:3px;letter-spacing:.1em;text-transform:uppercase}
+#hint{position:absolute;top:22px;right:24px;font-size:10px;color:#2a2a2a;font-family:'Space Mono',monospace;z-index:10;text-align:right;line-height:2;letter-spacing:.06em}
+#controls{position:absolute;bottom:28px;left:24px;display:flex;flex-direction:column;gap:6px;z-index:10}
+.ctrl-btn{width:34px;height:34px;border-radius:4px;background:#0d0d0d;border:0.5px solid #1e1e1e;color:#3a3a3a;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Space Mono',monospace}
+.ctrl-btn:hover{background:#161616;color:#e02020;border-color:#e02020}
+#legend{position:absolute;bottom:28px;right:24px;background:#080808;border:0.5px solid #181818;border-radius:4px;padding:14px 16px;z-index:10}
+#legend h4{font-size:9px;color:#2a2a2a;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;font-family:'Space Mono',monospace}
+.leg-item{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:10px;color:#3a3a3a;font-family:'Space Mono',monospace}
+.leg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+#panel{width:0;overflow:hidden;background:#080808;border-left:0.5px solid #161616;transition:width .3s ease;display:flex;flex-direction:column;flex-shrink:0;position:relative}
 #panel.open{width:340px}
-#panel-inner{padding:24px;overflow-y:auto;height:100%}
-#panel-theme-bar{height:4px;border-radius:2px;margin-bottom:20px}
-#panel-icon{font-size:28px;margin-bottom:12px}
-#panel-title{font-family:var(--font-title);font-size:20px;font-weight:700;margin-bottom:6px;line-height:1.2}
-#panel-subtitle{font-size:12px;color:var(--muted);font-family:var(--font-mono);margin-bottom:18px;text-transform:uppercase;letter-spacing:.08em}
-#panel-desc{font-size:14px;line-height:1.7;color:rgba(232,234,240,.8);margin-bottom:20px}
-#panel-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
-.ptag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--font-mono);background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.1);color:var(--muted)}
-#panel-sources{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
-#panel-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border:0.5px solid var(--border);border-radius:50%;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;display:none;align-items:center;justify-content:center;transition:all .15s}
-#panel-close:hover{background:var(--surface2);color:var(--text)}
-#panel.open~#panel-close{display:flex}
-
-/* Header */
-#header{
-  position:absolute;top:20px;left:20px;
-  display:flex;align-items:center;gap:12px;
-  z-index:10;pointer-events:none;
-}
-#logo{
-  font-family:var(--font-title);font-size:18px;font-weight:700;
-  color:var(--green);letter-spacing:-.02em;
-}
-#tagline{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
-
-/* Controls */
-#controls{
-  position:absolute;bottom:24px;left:24px;
-  display:flex;flex-direction:column;gap:8px;z-index:10;
-}
-.ctrl-btn{
-  width:36px;height:36px;border-radius:8px;
-  background:var(--surface);border:0.5px solid var(--border);
-  color:var(--muted);cursor:pointer;font-size:16px;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .15s;
-}
-.ctrl-btn:hover{background:var(--surface2);color:var(--text);border-color:rgba(255,255,255,.15)}
-
-/* Legend */
-#legend{
-  position:absolute;bottom:24px;right:24px;
-  background:var(--surface);border:0.5px solid var(--border);
-  border-radius:12px;padding:14px 16px;z-index:10;
-  max-width:200px;
-}
-#legend h4{font-family:var(--font-title);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.leg-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:rgba(232,234,240,.7)}
-.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-
-/* Tooltip */
-#tooltip{
-  position:absolute;background:var(--surface);
-  border:0.5px solid var(--border);border-radius:8px;
-  padding:8px 12px;font-size:12px;color:var(--text);
-  pointer-events:none;opacity:0;transition:opacity .15s;
-  z-index:20;max-width:180px;font-family:var(--font-mono);
-  white-space:nowrap;
-}
-
-/* Node styles via D3 */
-.node-center circle{filter:drop-shadow(0 0 12px rgba(0,229,160,.35))}
-.node circle{cursor:pointer;transition:r .2s}
-.node text{pointer-events:none;user-select:none}
-.link{stroke:rgba(255,255,255,.08);fill:none}
-.link.active{stroke:rgba(255,255,255,.18)}
-
-/* Hint */
-#hint{
-  position:absolute;top:20px;right:20px;
-  font-size:11px;color:var(--muted);font-family:var(--font-mono);
-  z-index:10;text-align:right;line-height:1.8;
-}
-
-/* Mobile */
-@media(max-width:640px){
-  #panel.open{width:100vw;position:absolute;top:0;right:0;z-index:50;height:100%}
-  #legend{display:none}
-  #hint{display:none}
-}
+#panel-inner{padding:28px 24px;overflow-y:auto;height:100%}
+#panel-bar{height:2px;margin-bottom:24px;background:#e02020}
+#panel-icon{font-size:24px;margin-bottom:12px}
+#panel-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px;line-height:1.2;color:#f0ece8}
+#panel-sub{font-size:10px;color:#e02020;font-family:'Space Mono',monospace;margin-bottom:18px;text-transform:uppercase;letter-spacing:.12em}
+#panel-desc{font-size:13px;line-height:1.8;color:#606060;margin-bottom:20px;border-left:1.5px solid #181818;padding-left:14px}
+#panel-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px}
+.ptag{padding:3px 10px;border-radius:2px;font-size:9px;font-weight:700;font-family:'Space Mono',monospace;background:#0d0d0d;border:0.5px solid #1e1e1e;color:#3a3a3a;letter-spacing:.06em;text-transform:uppercase}
+#panel-src{font-size:10px;color:#222;font-family:'Space Mono',monospace;padding-top:16px;border-top:0.5px solid #111}
+#panel-close{position:absolute;top:14px;right:14px;width:24px;height:24px;border:0.5px solid #1e1e1e;border-radius:2px;background:transparent;color:#2a2a2a;cursor:pointer;font-size:14px;display:none;align-items:center;justify-content:center;font-family:'Space Mono',monospace}
+#panel-close:hover{border-color:#e02020;color:#e02020}
+#panel.open+#panel-close{display:flex}
+#tooltip{position:fixed;background:#0a0a0a;border:0.5px solid #e0202055;border-radius:2px;padding:5px 10px;font-size:10px;color:#e02020;pointer-events:none;opacity:0;transition:opacity .1s;z-index:100;font-family:'Space Mono',monospace;white-space:nowrap;letter-spacing:.06em}
+@media(max-width:640px){#panel.open{width:100vw;position:absolute;top:0;right:0;z-index:50;height:100%}#legend{display:none}#hint{display:none}}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="canvas">
-    <div id="header">
-      <div>
-        <div id="logo">COMPLOT MAP</div>
-        <div id="tagline">Cartographie des théories</div>
-      </div>
-    </div>
-    <div id="hint">Clic — détails · Scroll — zoom<br>Clic nœud principal — développer</div>
+    <div id="header"><div id="logo">COMPLOT<span> //</span> MAP</div><div id="tagline">Cartographie des théories</div></div>
+    <div id="hint">CLIC — DÉTAILS &nbsp;·&nbsp; SCROLL — ZOOM<br>CLIC NŒUD — DÉVELOPPER</div>
     <div id="controls">
-      <button class="ctrl-btn" onclick="zoomIn()" title="Zoom +">+</button>
-      <button class="ctrl-btn" onclick="zoomOut()" title="Zoom -">−</button>
-      <button class="ctrl-btn" onclick="resetZoom()" title="Centrer">⊙</button>
+      <button class="ctrl-btn" onclick="doZoom(1.4)">+</button>
+      <button class="ctrl-btn" onclick="doZoom(0.7)">−</button>
+      <button class="ctrl-btn" onclick="doReset()">○</button>
     </div>
-    <div id="legend">
-      <h4>Thèmes</h4>
-    </div>
+    <div id="legend"><h4>Thèmes</h4></div>
     <svg id="svg"></svg>
     <div id="tooltip"></div>
   </div>
-
   <div id="panel">
     <div id="panel-inner">
-      <div id="panel-theme-bar"></div>
+      <div id="panel-bar"></div>
       <div id="panel-icon"></div>
       <div id="panel-title"></div>
-      <div id="panel-subtitle"></div>
+      <div id="panel-sub"></div>
       <div id="panel-desc"></div>
       <div id="panel-tags"></div>
-      <div id="panel-sources"></div>
+      <div id="panel-src"></div>
     </div>
   </div>
   <button id="panel-close" onclick="closePanel()">×</button>
 </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script>
-var W, H, simulation, svg, zoomBehavior, gMain, selectedNode;
-
-var THEMES = {
-  controle: { color:'#00b8d4', label:'Contrôle humain', icon:'👁' },
-  depop:    { color:'#ff4d6d', label:'Dépopulation',     icon:'💉' },
-  trans:    { color:'#f7c948', label:'Transhumanisme',   icon:'🤖' },
-  prop:     { color:'#a855f7', label:'Propagande',       icon:'📺' },
-  alim:     { color:'#22c55e', label:'Alimentation',     icon:'🌿' },
-  symb:     { color:'#f472b6', label:'Symbolisme',       icon:'🔺' },
-  polit:    { color:'#fb923c', label:'Politique',        icon:'🌐' },
-  tech:     { color:'#64748b', label:'Tech / Surveillance', icon:'📡' }
-};
-
-var NODES = [
-  {
-    id:'center', label:'Nouvel Ordre\nMondial', type:'center', theme:null,
-    icon:'⚠',
-    desc:"Concept central désignant un projet supposé d'élites mondiales visant à instaurer un gouvernement unique, réduire la population et contrôler chaque aspect de la vie humaine via la technologie.",
-    tags:['Great Reset','Agenda 2030','WEF','NWO'],
-    source:'Documents Complot 2025'
-  },
-  {
-    id:'controle', label:'Contrôle humain', type:'main', theme:'controle',
-    desc:"Ensemble de mécanismes tech et financiers pour surveiller, noter et contrôler les comportements de chaque individu à l'échelle planétaire.",
-    tags:['CBDC','Crédit social','Smart cities'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'depop', label:'Dépopulation', type:'main', theme:'depop',
-    desc:"Projet de réduction de la population mondiale à 500 millions d'individus via la stérilisation, les maladies, les guerres et l'ingénierie alimentaire.",
-    tags:['Agenda 2030','Guidestones','Sterilisation'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'trans', label:'Transhumanisme', type:'main', theme:'trans',
-    desc:"Fusion de l'être humain avec la machine : implants, IA, modification génétique — selon K. Schwab, la 4ème révolution industrielle fusionne le physique, le biologique et le numérique.",
-    tags:['Klaus Schwab','4ème révolution','Neuralink'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'prop', label:'Propagande', type:'main', theme:'prop',
-    desc:"Utilisation des médias, de la musique, du cinéma et des personnalités publiques pour façonner les opinions, désensibiliser la population et promouvoir l'agenda mondialiste.",
-    tags:['Médias','Musique','Cinéma','Clips'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'alim', label:'Alimentation', type:'main', theme:'alim',
-    desc:"Intoxication progressive via la nourriture industrielle : perturbateurs endocriniens, fluorure pour calcifier la glande pinéale, insectes, oxyde de graphène.",
-    tags:['Perturbateurs','Fluor','Insectes'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'symb', label:'Symbolisme', type:'main', theme:'symb',
-    desc:"Signes et symboles utilisés par les élites pour communiquer entre eux et afficher leur appartenance : one eye, damier, rituel Mk Ultra, adrénocrome.",
-    tags:['One eye','Mk Ultra','Adrénocrome','Epstein'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'polit', label:'Politique', type:'main', theme:'polit',
-    desc:"Le système politique démocratique comme façade : opposition contrôlée, tous acteurs d'un même script. Le vrai pouvoir réside aux élites du WEF à Davos.",
-    tags:['WEF','Davos','Opposition contrôlée'],
-    source:'Doc. Complot 2025'
-  },
-  {
-    id:'tech', label:'Tech &\nSurveillance', type:'main', theme:'tech',
-    desc:"Les grandes entreprises technologiques comme bras armé du contrôle : collecte de data, algorithmes de prédiction du comportement, outils de traçage.",
-    tags:['Palantir','GAFAM','IA','Wearables'],
-    source:'Doc. Complot 2025'
-  },
-  // Sub-nodes Contrôle
-  {id:'cbdc',    label:'CBDC', type:'sub', theme:'controle', parent:'controle', desc:"Monnaie numérique de banque centrale — permettrait de conditionner l'usage de l'argent (bloquer certaines dépenses, programmer l'expiration).", tags:['Finance','Bitcoin','Contrôle'], source:'Doc. Complot 2025'},
-  {id:'credit',  label:'Crédit social', type:'sub', theme:'controle', parent:'controle', desc:"Système de notation citoyenne basé sur toutes les données comportementales — inspiré du modèle chinois, généralisé mondialement.", tags:['Chine','Surveillance','Score'], source:'Doc. Complot 2025'},
-  {id:'smart',   label:'Smart cities', type:'sub', theme:'controle', parent:'controle', desc:"Villes intelligentes conçues pour regrouper la population dans des zones 100% surveillées, réduire la mobilité et contrôler l'accès aux ressources.", tags:['15 min city','Surveillance','Mobilité'], source:'Doc. Complot 2025'},
-  {id:'idnum',   label:'Identité numérique', type:'sub', theme:'controle', parent:'controle', desc:"Identifiant unique lié à la biométrie, aux déplacements, aux finances — porte d'entrée vers le contrôle total.", tags:['Biométrie','QR code'], source:'Doc. Complot 2025'},
-  {id:'rev',     label:'Revenu universel', type:'sub', theme:'controle', parent:'controle', desc:"Utilisé comme levier pour conditionner les comportements — versé en CBDC, soumis à conditions.", tags:['Finance','Dépendance'], source:'Doc. Complot 2025'},
-  // Sub-nodes Dépopulation
-  {id:'500m',    label:'Réduction 500M', type:'sub', theme:'depop', parent:'depop', desc:"Objectif gravé sur les Guidestones de Géorgie (démolies en 2022) : maintenir la population mondiale sous les 500 millions.", tags:['Guidestones','NWO'], source:'Doc. Complot 2025'},
-  {id:'steril',  label:'Stérilisation', type:'sub', theme:'depop', parent:'depop', desc:"Via alimentation, chimtrails, vaccins — réduction progressive de la fertilité humaine sans consentement explicite.", tags:['Vaccins','Chemtrails','Aliments'], source:'Doc. Complot 2025'},
-  {id:'femin',   label:'Féminisme agenda', type:'sub', theme:'depop', parent:'depop', desc:"Le féminisme institutionnel aurait été créé pour pousser les femmes à ne pas avoir d'enfants et détruire la cellule familiale.", tags:['Famille','Natalité'], source:'Doc. Complot 2025'},
-  {id:'chem',    label:'Chemtrails', type:'sub', theme:'depop', parent:'depop', desc:"Traînées laissées par les avions contenant des composés chimiques pour modifier le climat et affecter la santé — un état américain a interdit certains survols.", tags:['Géoingénierie','Atmosphère'], source:'Doc. Complot 2025'},
-  {id:'ag2030',  label:'Agenda 2030', type:'sub', theme:'depop', parent:'depop', desc:"Programme ONU présenté comme développement durable, interprété comme feuille de route pour le contrôle mondial.", tags:['ONU','WEF','Davos'], source:'Doc. Complot 2025'},
-  // Sub-nodes Transhumanisme
-  {id:'schwab',  label:'Klaus Schwab', type:'sub', theme:'trans', parent:'trans', desc:"Fondateur du WEF, auteur du \"Grand Reset\" — prône la fusion des modes physique, biologique et numérique dans la 4ème révolution industrielle.", tags:['WEF','Grand Reset'], source:'Doc. Complot 2025'},
-  {id:'neura',   label:'Neuralink', type:'sub', theme:'trans', parent:'trans', desc:"Implant cérébral développé par Elon Musk — premier pas vers le contrôle de la pensée selon les théoriciens.", tags:['Elon Musk','Implant','Cerveau'], source:'Doc. Complot 2025'},
-  {id:'genre',   label:'Confusion des genres', type:'sub', theme:'trans', parent:'trans', desc:"L'agenda transgenre comme étape préalable à l'androïdie — «avant d'être des androïdes, on doit être androgynes».", tags:['Genre','Agenda','Androïde'], source:'Doc. Complot 2025'},
-  {id:'reseaux', label:'Réseaux / chirurgie', type:'sub', theme:'trans', parent:'trans', desc:"Filtres, avatars, chirurgies esthétiques — déshumanisation progressive qui prépare l'acceptation de l'hybride homme-machine.", tags:['Social media','Artificiel'], source:'Doc. Complot 2025'},
-  // Sub-nodes Propagande
-  {id:'musiq',   label:'Musique / clips', type:'sub', theme:'prop', parent:'prop', desc:"Les artistes (Beyoncé, Eminem, Nicki Minaj…) intégreraient des symboles et messages dans leurs clips, avouant ce qu'on leur fait subir.", tags:['Beyoncé','Eminem','Mk Ultra'], source:'Doc. Complot 2025'},
-  {id:'cinema',  label:'Cinéma / séries', type:'sub', theme:'prop', parent:'prop', desc:"Films et séries anticipent et préparent psychologiquement la population aux changements à venir — Truman Show, Black Mirror, les Simpson.", tags:['Netflix','Simpson','Black Mirror'], source:'Doc. Complot 2025'},
-  {id:'sport',   label:'Sport', type:'sub', theme:'prop', parent:'prop', desc:"Foot et grandes compétitions comme outil de dissociation de masse — détournement de l'attention et contrôle mental des foules.", tags:['Football','FIFA','Distraction'], source:'Doc. Complot 2025'},
-  {id:'celebs',  label:'Célébrités / agents', type:'sub', theme:'prop', parent:'prop', desc:"Les personnalités publiques seraient des agents de propagande — leur médiatisation est orchestrée en échange de leur montée.", tags:['Hollywood','WEF','Propagande'], source:'Doc. Complot 2025'},
-  // Sub-nodes Alimentation
-  {id:'pertub',  label:'Perturbateurs endocriniens', type:'sub', theme:'alim', parent:'alim', desc:"Présents dans emballages, pesticides, cosmétiques — affectent hormones, fertilité et développement neural.", tags:['Hormones','Stérilité'], source:'Doc. Complot 2025'},
-  {id:'fluor',   label:'Fluor / glande pinéale', type:'sub', theme:'alim', parent:'alim', desc:"Le fluorure dans l'eau potable calcifierait la glande pinéale — siège de la conscience et du «3ème œil» selon les théoriciens.", tags:['Eau potable','Conscience'], source:'Doc. Complot 2025'},
-  {id:'insect',  label:'Insectes / viande synth.', type:'sub', theme:'alim', parent:'alim', desc:"Remplacement progressif de la viande par des insectes et protéines synthétiques — jamais de pub pour produits naturels.", tags:['WEF','Bugs','Protéines'], source:'Doc. Complot 2025'},
-  {id:'graphe',  label:'Oxyde de graphène', type:'sub', theme:'alim', parent:'alim', desc:"Matière programmable noire présente partout (vaccins, aliments, chemtrails) — permettrait la transmission de données à l'intérieur du corps.", tags:['Vaccins','Nano','Programmable'], source:'Doc. Complot 2025'},
-  // Sub-nodes Symbolisme
-  {id:'oneeye',  label:'One Eye', type:'sub', theme:'symb', parent:'symb', desc:"Symbole de l'œil unique, affiché par les artistes et personnalités contrôlées par l'élite — référence à l'œil d'Horus et à la structure pyramidale du pouvoir.", tags:['Horus','Élite','Signal'], source:'Doc. Complot 2025'},
-  {id:'epstein', label:'Epstein / réseau', type:'sub', theme:'symb', parent:'symb', desc:"Réseau de pédocriminalité liant les plus grandes personnalités mondiales (Clinton, Gates, prince Andrew) — preuve de la corruption totale des élites.", tags:['Pédocriminalité','Clinton','Gates'], source:'Doc. Complot 2025'},
-  {id:'adren',   label:'Adrénocrome', type:'sub', theme:'symb', parent:'symb', desc:"Substance extraite du sang des enfants terrifiés, utilisée par les élites satanistes comme drogue régénératrice selon les théories.", tags:['Rituel','Élites','QAnon'], source:'Doc. Complot 2025'},
-  {id:'mkult',   label:'Mk Ultra', type:'sub', theme:'symb', parent:'symb', desc:"Programme de contrôle mental de la CIA, appliqué aux célébrités féminines (Britney, Marilyn) — les clips en représentent les symboles.", tags:['CIA','Contrôle mental','Artistes'], source:'Doc. Complot 2025'},
-  // Sub-nodes Politique
-  {id:'wef',     label:'WEF / Davos', type:'sub', theme:'polit', parent:'polit', desc:"Forum Économique Mondial de Davos — réunion annuelle où les élites planifient le Great Reset, la réduction de la population et le gouvernement mondial.", tags:['Élites','Schwab','Reset'], source:'Doc. Complot 2025'},
-  {id:'oppose',  label:'Opposition contrôlée', type:'sub', theme:'polit', parent:'polit', desc:"Tous les partis politiques joueraient dans le même camp — gauche vs droite est un théâtre pour diviser la population.", tags:['Démocratie','Théâtre','Zelensky'], source:'Doc. Complot 2025'},
-  {id:'guerres', label:'Guerres orchestrées', type:'sub', theme:'polit', parent:'polit', desc:"Les guerres (Ukraine, Moyen-Orient) sont planifiées pour provoquer l'effondrement économique, permettre le «Build Back Better» et supprimer les religions.", tags:['Ukraine','OTAN','Reset'], source:'Doc. Complot 2025'},
-  {id:'gouvm',   label:'Gouvernement mondial', type:'sub', theme:'polit', parent:'polit', desc:"Objectif ultime : un gouvernement unique planétaire, remplaçant les États-nations par une gouvernance technocratique centralisée.", tags:['ONU','WEF','NWO'], source:'Doc. Complot 2025'},
-  // Sub-nodes Tech
-  {id:'palant',  label:'Palantir', type:'sub', theme:'tech', parent:'tech', desc:"Entreprise d'analyse de données fondée par Peter Thiel — contrats avec agences de renseignement mondiales, considérée comme épine dorsale de la surveillance globale.", tags:['CIA','NSA','Big data'], source:'Doc. Complot 2025'},
-  {id:'phones',  label:'Téléphones / data', type:'sub', theme:'tech', parent:'tech', desc:"Chaque smartphone est un outil de traçage et d'influence — collecte permanente de données pour prédire et manipuler les désirs.", tags:['GAFAM','Tracking','Influence'], source:'Doc. Complot 2025'},
-  {id:'wearab',  label:'Wearables', type:'sub', theme:'tech', parent:'tech', desc:"Apple Watch et autres dispositifs portables comme premier pas vers l'intégration totale — «device de plus en plus proche du corps de l'homme».", tags:['Apple','IoT','Corps'], source:'Doc. Complot 2025'},
-  {id:'iacontr', label:'IA de contrôle', type:'sub', theme:'tech', parent:'tech', desc:"L'IA remplace la pensée humaine et permet de prédire/contrôler les comportements — ChatGPT et autres comme instruments de dépendance cognitive.", tags:['ChatGPT','Algorithme','Dépendance'], source:'Doc. Complot 2025'}
+var THEMES={controle:{color:'#e02020',label:'Contrôle humain',icon:'👁'},depop:{color:'#c41a1a',label:'Dépopulation',icon:'💉'},trans:{color:'#ff4444',label:'Transhumanisme',icon:'🤖'},prop:{color:'#b01010',label:'Propagande',icon:'📺'},alim:{color:'#e83030',label:'Alimentation',icon:'🌿'},symb:{color:'#ff2222',label:'Symbolisme',icon:'🔺'},polit:{color:'#cc1818',label:'Politique',icon:'🌐'},tech:{color:'#882020',label:'Tech & Surveillance',icon:'📡'}};
+var NODES=[
+{id:'center',label:'NOUVEL ORDRE\nMONDIAL',type:'center',theme:null,icon:'⚠',desc:"Concept central désignant un projet supposé d'élites mondiales visant à instaurer un gouvernement unique, réduire la population et contrôler chaque aspect de la vie humaine via la technologie.",tags:['GREAT RESET','AGENDA 2030','WEF','NWO'],src:'Documents Complot 2025'},
+{id:'controle',label:'CONTRÔLE\nHUMAIN',type:'main',theme:'controle',desc:"Ensemble de mécanismes tech et financiers pour surveiller, noter et contrôler les comportements de chaque individu à l'échelle planétaire.",tags:['CBDC','CRÉDIT SOCIAL','SMART CITIES'],src:'Doc. Complot 2025'},
+{id:'depop',label:'DÉPOPULATION',type:'main',theme:'depop',desc:"Projet de réduction de la population mondiale à 500 millions via stérilisation, maladies, guerres et ingénierie alimentaire.",tags:['AGENDA 2030','GUIDESTONES'],src:'Doc. Complot 2025'},
+{id:'trans',label:'TRANS-\nHUMANISME',type:'main',theme:'trans',desc:"Fusion de l'être humain avec la machine. Selon K. Schwab, la 4ème révolution industrielle fusionne le physique, le biologique et le numérique.",tags:['KLAUS SCHWAB','NEURALINK'],src:'Doc. Complot 2025'},
+{id:'prop',label:'PROPAGANDE',type:'main',theme:'prop',desc:"Utilisation des médias, musique, cinéma et célébrités pour façonner les opinions et promouvoir l'agenda mondialiste.",tags:['MÉDIAS','MUSIQUE','CINÉMA'],src:'Doc. Complot 2025'},
+{id:'alim',label:'ALIMENTATION',type:'main',theme:'alim',desc:"Intoxication progressive via la nourriture industrielle : perturbateurs endocriniens, fluorure, insectes, oxyde de graphène.",tags:['PERTURBATEURS','FLUOR'],src:'Doc. Complot 2025'},
+{id:'symb',label:'SYMBOLISME',type:'main',theme:'symb',desc:"Signes utilisés par les élites : one eye, damier, Mk Ultra, adrénocrome.",tags:['ONE EYE','MK ULTRA','EPSTEIN'],src:'Doc. Complot 2025'},
+{id:'polit',label:'POLITIQUE',type:'main',theme:'polit',desc:"Le système politique comme façade — opposition contrôlée, tous acteurs d'un même script. Le vrai pouvoir est aux élites du WEF.",tags:['WEF','DAVOS'],src:'Doc. Complot 2025'},
+{id:'tech',label:'TECH &\nSURVEILLANCE',type:'main',theme:'tech',desc:"Les grandes entreprises tech comme bras armé du contrôle : collecte de data, IA comportementale, outils de traçage.",tags:['PALANTIR','GAFAM','IA'],src:'Doc. Complot 2025'},
+{id:'cbdc',label:'CBDC',type:'sub',theme:'controle',parent:'controle',desc:"Monnaie numérique de banque centrale permettant de conditionner l'usage de l'argent.",tags:['FINANCE'],src:'Doc. 2025'},
+{id:'credit',label:'CRÉDIT SOCIAL',type:'sub',theme:'controle',parent:'controle',desc:"Système de notation citoyenne basé sur les données comportementales — modèle chinois.",tags:['CHINE'],src:'Doc. 2025'},
+{id:'smart',label:'SMART CITIES',type:'sub',theme:'controle',parent:'controle',desc:"Villes intelligentes pour regrouper la population dans des zones 100% surveillées.",tags:['MOBILITÉ'],src:'Doc. 2025'},
+{id:'idnum',label:'IDENTITÉ NUM.',type:'sub',theme:'controle',parent:'controle',desc:"Identifiant unique lié à la biométrie — porte d'entrée vers le contrôle total.",tags:['QR CODE'],src:'Doc. 2025'},
+{id:'rev',label:'REVENU UNIV.',type:'sub',theme:'controle',parent:'controle',desc:"Versé en CBDC, soumis à conditions comportementales.",tags:['FINANCE'],src:'Doc. 2025'},
+{id:'500m',label:'RÉDUCTION 500M',type:'sub',theme:'depop',parent:'depop',desc:"Objectif gravé sur les Guidestones de Géorgie : maintenir la population mondiale sous 500 millions.",tags:['GUIDESTONES'],src:'Doc. 2025'},
+{id:'steril',label:'STÉRILISATION',type:'sub',theme:'depop',parent:'depop',desc:"Via alimentation, chemtrails, vaccins — réduction progressive de la fertilité humaine.",tags:['VACCINS'],src:'Doc. 2025'},
+{id:'femin',label:'FÉMINISME\nAGENDA',type:'sub',theme:'depop',parent:'depop',desc:"Le féminisme institutionnel créé pour pousser les femmes à ne pas avoir d'enfants.",tags:['NATALITÉ'],src:'Doc. 2025'},
+{id:'chem',label:'CHEMTRAILS',type:'sub',theme:'depop',parent:'depop',desc:"Traînées d'avions contenant des composés chimiques pour modifier le climat.",tags:['GÉOINGÉNIERIE'],src:'Doc. 2025'},
+{id:'schwab',label:'KLAUS SCHWAB',type:'sub',theme:'trans',parent:'trans',desc:"Fondateur du WEF — prône la fusion physique, biologique et numérique dans la 4ème révolution.",tags:['WEF'],src:'Doc. 2025'},
+{id:'neura',label:'NEURALINK',type:'sub',theme:'trans',parent:'trans',desc:"Implant cérébral d'Elon Musk — premier pas vers le contrôle de la pensée.",tags:['ELON MUSK'],src:'Doc. 2025'},
+{id:'genre',label:'CONFUSION\nGENRES',type:'sub',theme:'trans',parent:'trans',desc:"L'agenda transgenre comme étape préalable à l'androïdie — «avant d'être des androïdes, on doit être androgynes».",tags:['AGENDA'],src:'Doc. 2025'},
+{id:'musiq',label:'MUSIQUE / CLIPS',type:'sub',theme:'prop',parent:'prop',desc:"Les artistes (Beyoncé, Eminem…) intégreraient des symboles dans leurs clips.",tags:['BEYONCÉ','EMINEM'],src:'Doc. 2025'},
+{id:'cinema',label:'CINÉMA / SÉRIES',type:'sub',theme:'prop',parent:'prop',desc:"Films et séries anticipent les changements à venir — Truman Show, Black Mirror, les Simpson.",tags:['SIMPSON'],src:'Doc. 2025'},
+{id:'celebs',label:'CÉLÉBRITÉS\nAGENTS',type:'sub',theme:'prop',parent:'prop',desc:"Les personnalités publiques seraient des agents de propagande.",tags:['HOLLYWOOD'],src:'Doc. 2025'},
+{id:'pertub',label:'PERTURBATEURS\nENDO.',type:'sub',theme:'alim',parent:'alim',desc:"Présents dans emballages, pesticides — affectent hormones et fertilité.",tags:['HORMONES'],src:'Doc. 2025'},
+{id:'fluor',label:'FLUOR /\nPINÉALE',type:'sub',theme:'alim',parent:'alim',desc:"Le fluorure dans l'eau potable calcifierait la glande pinéale — siège de la conscience.",tags:['EAU'],src:'Doc. 2025'},
+{id:'insect',label:'INSECTES',type:'sub',theme:'alim',parent:'alim',desc:"Remplacement progressif de la viande par des insectes — jamais de pub pour produits naturels.",tags:['WEF'],src:'Doc. 2025'},
+{id:'graphe',label:'OXYDE\nGRAPHÈNE',type:'sub',theme:'alim',parent:'alim',desc:"Matière programmable dans vaccins, aliments, chemtrails permettant la transmission de données.",tags:['NANO'],src:'Doc. 2025'},
+{id:'oneeye',label:'ONE EYE',type:'sub',theme:'symb',parent:'symb',desc:"Symbole de l'œil unique affiché par les artistes contrôlés — référence à l'œil d'Horus.",tags:['HORUS'],src:'Doc. 2025'},
+{id:'epstein',label:'RÉSEAU\nEPSTEIN',type:'sub',theme:'symb',parent:'symb',desc:"Réseau liant Clinton, Gates, prince Andrew — preuve de la corruption totale des élites.",tags:['CLINTON'],src:'Doc. 2025'},
+{id:'adren',label:'ADRÉNOCROME',type:'sub',theme:'symb',parent:'symb',desc:"Substance extraite du sang des enfants terrifiés, utilisée comme drogue régénératrice.",tags:['RITUEL'],src:'Doc. 2025'},
+{id:'mkult',label:'MK ULTRA',type:'sub',theme:'symb',parent:'symb',desc:"Programme de contrôle mental de la CIA appliqué aux célébrités féminines.",tags:['CIA'],src:'Doc. 2025'},
+{id:'wef',label:'WEF / DAVOS',type:'sub',theme:'polit',parent:'polit',desc:"Forum où les élites planifient le Great Reset, la réduction de la population et le gouvernement mondial.",tags:['SCHWAB'],src:'Doc. 2025'},
+{id:'oppose',label:'OPPOSITION\nCONTRÔLÉE',type:'sub',theme:'polit',parent:'polit',desc:"Tous les partis politiques jouent dans le même camp — gauche vs droite est un théâtre.",tags:['ZELENSKY'],src:'Doc. 2025'},
+{id:'guerres',label:'GUERRES\nORCHESTRÉES',type:'sub',theme:'polit',parent:'polit',desc:"Les guerres sont planifiées pour provoquer l'effondrement économique et le «Build Back Better».",tags:['UKRAINE'],src:'Doc. 2025'},
+{id:'palant',label:'PALANTIR',type:'sub',theme:'tech',parent:'tech',desc:"Entreprise de Peter Thiel — contrats avec agences de renseignement, épine dorsale de la surveillance.",tags:['CIA','NSA'],src:'Doc. 2025'},
+{id:'phones',label:'TÉLÉPHONES\nDATA',type:'sub',theme:'tech',parent:'tech',desc:"Chaque smartphone est un outil de traçage — collecte permanente pour manipuler les désirs.",tags:['GAFAM'],src:'Doc. 2025'},
+{id:'iacontr',label:'IA DE CONTRÔLE',type:'sub',theme:'tech',parent:'tech',desc:"L'IA remplace la pensée humaine — ChatGPT comme instrument de dépendance cognitive.",tags:['CHATGPT'],src:'Doc. 2025'}
 ];
-
-var LINKS = [];
-NODES.forEach(function(n){
-  if(n.type==='main') LINKS.push({source:'center', target:n.id, type:'main'});
-  if(n.type==='sub')  LINKS.push({source:n.parent, target:n.id, type:'sub'});
-});
-
-// State
-var expandedNodes = {};
-var visibleNodes, visibleLinks;
-
-function getVisibleData(){
-  var vn = NODES.filter(function(n){ return n.type!=='sub' || expandedNodes[n.parent]; });
-  var ids = {};
-  vn.forEach(function(n){ ids[n.id]=true; });
-  var vl = LINKS.filter(function(l){ return ids[l.source]&&ids[l.target]; });
-  return {nodes:vn, links:vl};
-}
-
-function init(){
-  W = document.getElementById('canvas').offsetWidth;
-  H = document.getElementById('canvas').offsetHeight;
-
-  // Build legend
-  var leg = document.getElementById('legend');
-  Object.keys(THEMES).forEach(function(k){
-    var t = THEMES[k];
-    var item = document.createElement('div');
-    item.className='leg-item';
-    item.innerHTML='<div class="leg-dot" style="background:'+t.color+'"></div><span>'+t.label+'</span>';
-    leg.appendChild(item);
+var LINKS=[];
+NODES.forEach(function(n){ if(n.type==='main') LINKS.push({source:'center',target:n.id,ltype:'main'}); if(n.type==='sub') LINKS.push({source:n.parent,target:n.id,ltype:'sub'}); });
+var expanded={},gRoot,sim,zoom,W=window.innerWidth,H=window.innerHeight;
+function getTheme(d){ return d.theme?THEMES[d.theme]:{color:'#e02020',label:'Centre',icon:'⚠'}; }
+function buildLegend(){ var leg=document.getElementById('legend'); Object.keys(THEMES).forEach(function(k){ var t=THEMES[k]; var div=document.createElement('div'); div.className='leg-item'; div.innerHTML='<div class="leg-dot" style="background:'+t.color+'"></div><span>'+t.label+'</span>'; leg.appendChild(div); }); }
+function initPositions(){ var mains=NODES.filter(function(n){ return n.type==='main'; }); var a=(2*Math.PI)/mains.length; mains.forEach(function(n,i){ n.x=Math.cos(i*a-Math.PI/2)*210; n.y=Math.sin(i*a-Math.PI/2)*210; }); NODES.filter(function(n){ return n.id==='center'; }).forEach(function(n){ n.x=0; n.y=0; }); }
+function visData(){ var vn=NODES.filter(function(n){ return n.type!=='sub'||expanded[n.parent]; }); var ids={}; vn.forEach(function(n){ ids[n.id]=true; }); var vl=LINKS.filter(function(l){ return ids[l.source.id||l.source]&&ids[l.target.id||l.target]; }); return {nodes:vn,links:vl}; }
+function render(){
+  var d=visData();
+  var lSel=gRoot.selectAll('line.link').data(d.links,function(l){ return (l.source.id||l.source)+'-'+(l.target.id||l.target); });
+  lSel.enter().append('line').attr('class','link').attr('stroke',function(l){ var tid=l.target.id||l.target; var node=NODES.find(function(n){ return n.id===tid; }); return node&&node.theme?THEMES[node.theme].color+'35':'#e0202025'; }).attr('stroke-width',function(l){ return l.ltype==='sub'?.5:1; });
+  lSel.exit().remove();
+  var nSel=gRoot.selectAll('g.node').data(d.nodes,function(n){ return n.id; });
+  var enter=nSel.enter().append('g').attr('class','node').style('cursor','pointer')
+    .call(d3.drag().on('start',function(e,n){ if(!e.active) sim.alphaTarget(.3).restart(); n.fx=n.x; n.fy=n.y; }).on('drag',function(e,n){ n.fx=e.x; n.fy=e.y; }).on('end',function(e,n){ if(!e.active) sim.alphaTarget(0); n.fx=null; n.fy=null; }))
+    .on('click',function(e,n){ e.stopPropagation(); onClick(n); })
+    .on('mouseover',function(e,n){ showTip(e,n); }).on('mouseout',hideTip);
+  enter.append('circle').attr('r',function(n){ return n.type==='center'?56:n.type==='main'?34:19; }).attr('fill','#000').attr('stroke',function(n){ return getTheme(n).color; }).attr('stroke-width',function(n){ return n.type==='center'?1.5:n.type==='main'?1:.6; }).attr('stroke-opacity',function(n){ return n.type==='sub'?.35:.75; });
+  enter.append('circle').attr('r',function(n){ return n.type==='center'?54:n.type==='main'?32:17; }).attr('fill',function(n){ return getTheme(n).color+'10'; }).attr('stroke','none');
+  enter.each(function(n){
+    var g=d3.select(this); var lines=n.label.split('\n'); var fs=n.type==='center'?11:n.type==='main'?10:8; var lh=11;
+    var col=n.type==='center'?'#e02020':'#d0ccc8'; var fw='700'; var ff='Space Mono,monospace';
+    var totalH=(lines.length-1)*lh;
+    lines.forEach(function(line,i){ g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle').attr('y',-totalH/2+i*lh).attr('font-size',fs).attr('font-family',ff).attr('font-weight',fw).attr('fill',col).attr('pointer-events','none').text(line); });
+    if(n.type==='main'){ g.append('circle').attr('class','expdot').attr('cx',22).attr('cy',-22).attr('r',3).attr('fill','#111').attr('stroke',getTheme(n).color).attr('stroke-width',.6).attr('pointer-events','none'); }
   });
-
-  svg = d3.select('#svg')
-    .call(d3.zoom()
-      .scaleExtent([0.3,3])
-      .on('zoom', function(e){ gMain.attr('transform', e.transform); })
-    );
-  svg.on('dblclick.zoom', null);
-  zoomBehavior = d3.zoom().scaleExtent([0.3,3]).on('zoom', function(e){ gMain.attr('transform', e.transform); });
-  d3.select('#svg').call(zoomBehavior);
-
-  gMain = svg.append('g').attr('transform','translate('+W/2+','+H/2+')');
-
-  simulation = d3.forceSimulation()
-    .force('link', d3.forceLink().id(function(d){ return d.id; }).distance(function(d){ return d.type==='sub'?90:160; }).strength(1))
-    .force('charge', d3.forceManyBody().strength(function(d){ return d.type==='center'?-800:d.type==='main'?-400:-180; }))
-    .force('center', d3.forceCenter(0,0))
-    .force('collide', d3.forceCollide().radius(function(d){ return d.type==='center'?70:d.type==='main'?55:40; }));
-
+  var all=enter.merge(nSel);
+  all.selectAll('.expdot').attr('fill',function(){ var nd=d3.select(this.parentNode).datum(); return expanded[nd.id]?getTheme(nd).color:'#111'; });
+  nSel.exit().remove();
+  sim.nodes(d.nodes); sim.force('link').links(d.links); sim.alpha(.5).restart();
+}
+function tick(){ gRoot.selectAll('line.link').attr('x1',function(l){ return l.source.x; }).attr('y1',function(l){ return l.source.y; }).attr('x2',function(l){ return l.target.x; }).attr('y2',function(l){ return l.target.y; }); gRoot.selectAll('g.node').attr('transform',function(n){ return 'translate('+n.x+','+n.y+')'; }); }
+function onClick(n){ if(n.type==='main'){ expanded[n.id]=!expanded[n.id]; render(); } openPanel(n); }
+function openPanel(n){ var th=getTheme(n); document.getElementById('panel-bar').style.background=th.color; document.getElementById('panel-icon').textContent=n.icon||th.icon||''; document.getElementById('panel-title').textContent=n.label.replace('\n',' '); document.getElementById('panel-sub').textContent=n.theme?th.label:'CONCEPT CENTRAL'; document.getElementById('panel-desc').textContent=n.desc||''; document.getElementById('panel-tags').innerHTML=(n.tags||[]).map(function(t){ return '<span class="ptag">'+t+'</span>'; }).join(''); document.getElementById('panel-src').textContent='SOURCE — '+(n.src||'—'); document.getElementById('panel').classList.add('open'); document.getElementById('panel-close').style.display='flex'; }
+function closePanel(){ document.getElementById('panel').classList.remove('open'); document.getElementById('panel-close').style.display='none'; }
+var tip=document.getElementById('tooltip');
+function showTip(e,n){ tip.textContent=n.label.replace('\n',' '); tip.style.opacity='1'; tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px'; }
+function hideTip(){ tip.style.opacity='0'; }
+function doZoom(k){ d3.select('#svg').transition().duration(300).call(zoom.scaleBy,k); }
+function doReset(){ d3.select('#svg').transition().duration(500).call(zoom.transform,d3.zoomIdentity); }
+function start(){
+  W=window.innerWidth; H=window.innerHeight; buildLegend(); initPositions();
+  var svgEl=d3.select('#svg');
+  zoom=d3.zoom().scaleExtent([.2,4]).on('zoom',function(e){ gRoot.attr('transform',e.transform); });
+  svgEl.call(zoom).on('dblclick.zoom',null);
+  svgEl.on('click',function(){ closePanel(); });
+  svgEl.call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2));
+  gRoot=svgEl.append('g').attr('transform','translate('+W/2+','+H/2+')');
+  sim=d3.forceSimulation().force('link',d3.forceLink().id(function(n){ return n.id; }).distance(function(l){ return l.ltype==='sub'?90:180; }).strength(.9)).force('charge',d3.forceManyBody().strength(function(n){ return n.type==='center'?-700:n.type==='main'?-400:-160; })).force('center',d3.forceCenter(0,0)).force('collide',d3.forceCollide().radius(function(n){ return n.type==='center'?70:n.type==='main'?55:38; })).on('tick',tick);
   render();
 }
-
-function render(){
-  var data = getVisibleData();
-
-  var linkSel = gMain.selectAll('.link').data(data.links, function(d){ return d.source.id+'-'+d.target.id; });
-  linkSel.enter().append('line').attr('class','link').attr('stroke-width', function(d){ return d.type==='sub'?.5:1; }).merge(linkSel);
-  linkSel.exit().remove();
-
-  var nodeSel = gMain.selectAll('.node').data(data.nodes, function(d){ return d.id; });
-
-  var nodeEnter = nodeSel.enter().append('g').attr('class', function(d){ return 'node node-'+d.type+' node-theme-'+d.theme; })
-    .call(d3.drag()
-      .on('start', function(e,d){ if(!e.active) simulation.alphaTarget(.3).restart(); d.fx=d.x;d.fy=d.y; })
-      .on('drag',  function(e,d){ d.fx=e.x;d.fy=e.y; })
-      .on('end',   function(e,d){ if(!e.active) simulation.alphaTarget(0); d.fx=null;d.fy=null; })
-    )
-    .on('click', function(e,d){ e.stopPropagation(); handleClick(d); })
-    .on('mouseover', function(e,d){ showTooltip(e,d); })
-    .on('mouseout', hideTooltip);
-
-  nodeEnter.append('circle')
-    .attr('r', function(d){ return d.type==='center'?52:d.type==='main'?34:20; })
-    .attr('fill', function(d){
-      if(d.type==='center') return '#00e5a0';
-      var t = THEMES[d.theme];
-      return d.type==='main' ? t.color+'22' : t.color+'15';
-    })
-    .attr('stroke', function(d){
-      if(d.type==='center') return '#00e5a0';
-      return THEMES[d.theme]?THEMES[d.theme].color:'#fff';
-    })
-    .attr('stroke-width', function(d){ return d.type==='center'?2:d.type==='main'?1.5:.8; })
-    .attr('stroke-opacity', function(d){ return d.type==='sub'?.5:1; });
-
-  // Icon
-  nodeEnter.filter(function(d){ return d.type==='center'; }).append('text')
-    .attr('text-anchor','middle').attr('dominant-baseline','middle')
-    .attr('y',-14).attr('font-size','20px').text('⚠');
-
-  // Labels
-  nodeEnter.each(function(d){
-    var g = d3.select(this);
-    var lines = d.label.split('\n');
-    var y0 = d.type==='center'?6:0;
-    var dy = d.type==='center'?13:d.type==='main'?12:10;
-    var fontSize = d.type==='center'?13:d.type==='main'?11:9;
-    var color = d.type==='center'?'#080b0f':d.type==='main'?(THEMES[d.theme]?THEMES[d.theme].color:'#fff'):'rgba(232,234,240,.7)';
-    var fontW = d.type==='center'?'700':d.type==='main'?'600':'400';
-    var totalH = lines.length*dy;
-    var startY = y0 - totalH/2 + dy/2;
-    lines.forEach(function(line,i){
-      g.append('text')
-        .attr('text-anchor','middle').attr('dominant-baseline','middle')
-        .attr('y', startY+i*dy)
-        .attr('font-size', fontSize+'px')
-        .attr('font-family', d.type==='main'?'Syne, sans-serif':'Space Mono, monospace')
-        .attr('font-weight', fontW)
-        .attr('fill', color)
-        .text(line);
-    });
-  });
-
-  // Expand indicator on main nodes
-  nodeEnter.filter(function(d){ return d.type==='main'; }).append('circle')
-    .attr('class','expand-dot')
-    .attr('r', 5).attr('cx',22).attr('cy',-22)
-    .attr('fill', function(d){ return expandedNodes[d.id]?THEMES[d.theme].color:'rgba(255,255,255,.15)'; })
-    .attr('stroke', function(d){ return THEMES[d.theme]?THEMES[d.theme].color:'#fff'; })
-    .attr('stroke-width',.8);
-
-  var nodeAll = nodeEnter.merge(nodeSel);
-
-  // Update expand dot
-  nodeAll.selectAll('.expand-dot')
-    .attr('fill', function(d){ return expandedNodes[d.id]?THEMES[d.theme].color:'rgba(255,255,255,.15)'; });
-
-  nodeSel.exit().remove();
-
-  simulation.nodes(data.nodes);
-  simulation.force('link').links(data.links);
-  simulation.alpha(.5).restart();
-
-  simulation.on('tick', function(){
-    gMain.selectAll('.link')
-      .attr('x1',function(d){ return d.source.x||0; })
-      .attr('y1',function(d){ return d.source.y||0; })
-      .attr('x2',function(d){ return d.target.x||0; })
-      .attr('y2',function(d){ return d.target.y||0; });
-    gMain.selectAll('.node')
-      .attr('transform',function(d){ return 'translate('+(d.x||0)+','+(d.y||0)+')'; });
-  });
-}
-
-function handleClick(d){
-  if(d.type==='main'){
-    if(expandedNodes[d.id]) delete expandedNodes[d.id];
-    else expandedNodes[d.id]=true;
-    render();
-  }
-  openPanel(d);
-}
-
-function openPanel(d){
-  selectedNode = d;
-  var th = d.theme ? THEMES[d.theme] : {color:'#00e5a0', label:'Centre', icon:'⚠'};
-  document.getElementById('panel-theme-bar').style.background = th.color;
-  document.getElementById('panel-icon').textContent = d.icon || th.icon || '';
-  document.getElementById('panel-title').textContent = d.label.replace('\n',' ');
-  document.getElementById('panel-subtitle').textContent = d.theme ? th.label : 'Concept central';
-  document.getElementById('panel-desc').textContent = d.desc||'';
-  var tagsHtml = (d.tags||[]).map(function(t){ return '<span class="ptag">'+t+'</span>'; }).join('');
-  document.getElementById('panel-tags').innerHTML = tagsHtml;
-  document.getElementById('panel-sources').textContent = 'Source : '+(d.source||'—');
-  document.getElementById('panel').classList.add('open');
-  document.getElementById('panel-close').style.display='flex';
-}
-
-function closePanel(){
-  document.getElementById('panel').classList.remove('open');
-  setTimeout(function(){ simulation.alpha(.1).restart(); },300);
-}
-
-var tooltipEl = document.getElementById('tooltip');
-function showTooltip(e,d){
-  tooltipEl.textContent = d.label.replace('\n',' ');
-  tooltipEl.style.opacity='1';
-  tooltipEl.style.left=(e.clientX+12)+'px';
-  tooltipEl.style.top=(e.clientY-8)+'px';
-}
-function hideTooltip(){
-  tooltipEl.style.opacity='0';
-}
-
-function zoomIn(){
-  d3.select('#svg').transition().duration(300).call(zoomBehavior.scaleBy,1.4);
-}
-function zoomOut(){
-  d3.select('#svg').transition().duration(300).call(zoomBehavior.scaleBy,0.7);
-}
-function resetZoom(){
-  d3.select('#svg').transition().duration(500).call(zoomBehavior.transform, d3.zoomIdentity.translate(W/2,H/2));
-}
-
-svg.on('click',function(){ closePanel(); });
-window.addEventListener('resize',function(){
-  W=document.getElementById('canvas').offsetWidth;
-  H=document.getElementById('canvas').offsetHeight;
-});
-
-init();
+window.addEventListener('resize',function(){ W=window.innerWidth; H=window.innerHeight; });
+setTimeout(start,50);
 </script>
 </body>
 </html>
