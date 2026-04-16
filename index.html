@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0a0a0a">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/manifest.json">
 <title>Conspiracy Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -15,577 +14,514 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #app{width:100vw;height:100vh;position:relative;display:flex}
 #canvas{flex:1;position:relative;overflow:hidden}
 svg#svg{width:100%;height:100%;display:block}
-
-/* Background canvas — pure CSS, GPU only */
-#bg-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.35}
-
-/* Loading */
+canvas#bg-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.3}
 #loading{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity .8s ease}
 #loading.hidden{opacity:0;pointer-events:none}
 .load-ring{width:44px;height:44px;border:1.5px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:18px}
 .load-text{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted2);letter-spacing:.12em;text-transform:uppercase}
-.load-sub{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em;margin-top:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Header */
-#header{position:absolute;top:20px;left:22px;z-index:10;pointer-events:none}
-#logo{font-size:17px;font-weight:700;color:var(--red);letter-spacing:.06em;animation:fade-in .8s ease both}
-#logo span{color:var(--text);opacity:.3}
-#tagline{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px;letter-spacing:.1em;text-transform:uppercase;animation:fade-in .8s .1s ease both}
 @keyframes fade-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-
-/* Top bar */
-#topbar{position:absolute;top:20px;right:22px;display:flex;align-items:center;gap:7px;z-index:10;animation:fade-in .8s .2s ease both}
+@keyframes slide-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#header{position:absolute;top:20px;left:22px;z-index:10;pointer-events:none;animation:fade-in .8s ease both}
+#logo{font-size:17px;font-weight:700;color:var(--red);letter-spacing:.06em}
+#logo span{color:var(--text);opacity:.3}
+#tagline{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px;letter-spacing:.1em;text-transform:uppercase}
+#breadcrumb{position:absolute;top:58px;left:22px;z-index:10;display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;max-width:55vw}
+.bc-item{cursor:pointer;transition:color .15s;padding:1px 0}
+.bc-item:hover{color:var(--red)}
+.bc-item.current{color:var(--muted2);cursor:default}
+.bc-sep{opacity:.35;pointer-events:none}
+#topbar{position:absolute;top:20px;right:22px;display:flex;align-items:center;gap:6px;z-index:10}
+#search-wrap{position:relative;display:flex;align-items:center}
+#search-input{width:0;padding:0;background:var(--surface);border:0.5px solid transparent;border-radius:3px;color:var(--text);font-size:9px;font-family:'Space Mono',monospace;letter-spacing:.06em;outline:none;transition:width .3s,padding .3s,border-color .3s}
+#search-input.open{width:120px;padding:4px 8px;border-color:var(--border)}
+#search-input:focus{border-color:var(--red)}
+.top-btn{height:26px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Space Mono',monospace;padding:0 8px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.top-btn:hover{border-color:var(--red);color:var(--red)}
+.top-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,32,32,.08)}
+.top-btn.icon{width:26px;padding:0;font-size:13px}
+#refresh-btn.spinning{animation:spin .8s linear infinite}
 #sync-status{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:.06em;display:flex;align-items:center;gap:5px}
-.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
-.sync-dot.live{background:#22c55e;box-shadow:0 0 6px #22c55e88;animation:pulse-dot 2s infinite}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.sync-dot.live{background:#22c55e;animation:pulse-dot 2s infinite}
 .sync-dot.loading{background:var(--red);animation:pulse-dot 1s infinite}
 @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
-.top-btn{height:26px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Space Mono',monospace;padding:0 8px;letter-spacing:.06em;text-transform:uppercase}
-.top-btn:hover{border-color:var(--red);color:var(--red)}
-#refresh-btn{width:26px;padding:0;font-size:13px}
-#refresh-btn.spinning{animation:spin .8s linear infinite}
-
-/* Controls */
-#controls{position:absolute;bottom:24px;left:22px;display:flex;flex-direction:column;gap:5px;z-index:10;animation:fade-in .8s .3s ease both}
-.ctrl-btn{width:32px;height:32px;border-radius:4px;background:var(--surface);border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Space Mono',monospace}
+#controls{position:absolute;bottom:24px;left:22px;display:flex;flex-direction:column;gap:5px;z-index:10}
+.ctrl-btn{width:32px;height:32px;border-radius:4px;background:var(--surface);border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .ctrl-btn:hover{background:var(--surface2);color:var(--red);border-color:var(--red)}
-
-/* Add button */
-#add-btn{position:absolute;bottom:24px;right:22px;width:40px;height:40px;border-radius:50%;background:var(--red);border:none;color:#fff;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:10;transition:transform .2s,box-shadow .2s;box-shadow:0 0 18px rgba(224,32,32,.35);animation:fade-in .8s .4s ease both}
-#add-btn:hover{transform:scale(1.12);box-shadow:0 0 28px rgba(224,32,32,.55)}
-#add-btn:active{transform:scale(.95)}
-
-/* Panel */
-#panel{width:0;overflow:hidden;background:var(--surface);border-left:0.5px solid var(--border);transition:width .38s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;flex-shrink:0;position:relative}
+#back-area{position:absolute;bottom:24px;left:22px;display:none;flex-direction:column;gap:5px;z-index:11}
+#back-area.visible{display:flex}
+#back-btn{height:32px;padding:0 12px;border-radius:4px;background:var(--surface);border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:9px;display:flex;align-items:center;gap:6px;transition:all .15s;font-family:'Space Mono',monospace;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;max-width:140px;overflow:hidden}
+#back-btn:hover{background:var(--surface2);color:var(--red);border-color:var(--red)}
+#back-btn:hover .back-arrow{transform:translateX(-2px)}
+.back-arrow{font-size:14px;transition:transform .15s;flex-shrink:0}
+#back-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;z-index:9;text-align:center;letter-spacing:.06em;pointer-events:none;opacity:.3}
+#tooltip{position:fixed;background:var(--surface);border:0.5px solid rgba(224,32,32,.4);border-radius:2px;padding:4px 9px;font-size:9px;color:var(--red);pointer-events:none;opacity:0;transition:opacity .1s;z-index:100;font-family:'Space Mono',monospace;white-space:nowrap;letter-spacing:.06em}
+#panel{width:0;overflow:hidden;background:var(--surface);border-left:0.5px solid var(--border);transition:width .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;flex-shrink:0;position:relative}
 #panel.open{width:320px}
-#panel-inner{padding:20px 18px 24px;overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:0}
+#panel-inner{padding:20px 18px 24px;overflow-y:auto;height:100%;display:flex;flex-direction:column}
 #panel-toprow{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-#panel-back{width:28px;height:28px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-family:'Space Mono',monospace}
+#panel-back{width:28px;height:28px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
 #panel-back:hover{border-color:var(--red);color:var(--red);transform:translateX(-2px)}
 #panel-bar{flex:1;height:2px;border-radius:1px;transition:background .3s}
-#panel-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:3px;line-height:1.2;color:var(--text);animation:slide-up .3s ease both}
-#panel-theme{font-size:9px;font-family:'Space Mono',monospace;margin-bottom:12px;text-transform:uppercase;letter-spacing:.12em;animation:slide-up .3s .05s ease both}
-#panel-desc{font-size:12px;line-height:1.85;color:#585450;margin-bottom:14px;border-left:1.5px solid var(--border);padding-left:12px;animation:slide-up .3s .1s ease both}
-#panel-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;animation:slide-up .3s .15s ease both}
-.ptag{padding:2px 8px;border-radius:2px;font-size:8px;font-weight:700;font-family:'Space Mono',monospace;background:var(--surface2);border:0.5px solid var(--border);color:var(--muted2);letter-spacing:.06em;text-transform:uppercase;transition:border-color .15s,color .15s;cursor:default}
-.ptag:hover{border-color:var(--muted2);color:var(--text)}
-#panel-src{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;padding-top:12px;border-top:0.5px solid var(--border);margin-top:auto;animation:slide-up .3s .2s ease both}
-#panel-open-doc{display:none;margin-top:10px;padding:7px 12px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted2);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .15s;text-align:center;text-decoration:none;animation:slide-up .3s .25s ease both}
-#panel-open-doc:hover{border-color:var(--red);color:var(--red)}
-@keyframes slide-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-/* Hint */
-#hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;z-index:10;text-align:center;line-height:2;letter-spacing:.06em;pointer-events:none;opacity:.35;animation:fade-in 1s 1s ease both}
-
-/* Tooltip */
-#tooltip{position:fixed;background:var(--surface);border:0.5px solid rgba(224,32,32,.4);border-radius:2px;padding:4px 9px;font-size:9px;color:var(--red);pointer-events:none;opacity:0;transition:opacity .12s;z-index:100;font-family:'Space Mono',monospace;white-space:nowrap;letter-spacing:.06em}
-
-/* Modal */
-#modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-#modal-overlay.open{display:flex}
-#modal{background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:24px;width:360px;max-width:92vw;animation:modal-in .22s cubic-bezier(.4,0,.2,1)}
-@keyframes modal-in{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
-#modal h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)}
-#modal p{font-size:10px;color:var(--muted2);font-family:'Space Mono',monospace;margin-bottom:18px;line-height:1.6}
-.form-label{font-size:9px;color:var(--muted2);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:block}
-#modal-doc,#modal-content{width:100%;padding:8px 10px;background:var(--surface2);border:0.5px solid var(--border);border-radius:3px;color:var(--text);font-size:11px;font-family:'Space Mono',monospace;transition:border-color .15s}
-#modal-doc{margin-bottom:14px;cursor:pointer}
-#modal-doc:focus,#modal-content:focus{outline:none;border-color:var(--red)}
-#modal-content{resize:vertical;min-height:80px;line-height:1.6}
-.modal-footer{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
-.btn-cancel{padding:7px 14px;background:transparent;border:0.5px solid var(--border);border-radius:3px;color:var(--muted2);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .15s}
-.btn-cancel:hover{border-color:var(--muted2);color:var(--text)}
-.btn-submit{padding:7px 14px;background:var(--red);border:none;border-radius:3px;color:#fff;font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:background .15s}
-.btn-submit:hover{background:var(--red2)}
-.btn-submit:disabled{opacity:.4;cursor:not-allowed}
-#modal-feedback{font-size:9px;font-family:'Space Mono',monospace;margin-top:8px;min-height:14px;text-align:right}
-
-/* Breadcrumb nav */
-#breadcrumb{position:absolute;top:56px;left:22px;z-index:10;display:flex;align-items:center;gap:5px;font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;pointer-events:none;opacity:0;transition:opacity .3s}
-#breadcrumb.visible{opacity:1}
-.bc-sep{opacity:.4}
-.bc-item{color:var(--muted2)}
-.bc-item.active{color:var(--red)}
-
-/* Node */
+#panel-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:3px;line-height:1.2;color:var(--text)}
+#panel-cat{font-size:9px;font-family:'Space Mono',monospace;margin-bottom:12px;text-transform:uppercase;letter-spacing:.12em}
+#panel-desc{font-size:12px;line-height:1.85;color:#585450;margin-bottom:14px;border-left:1.5px solid var(--border);padding-left:12px}
+#panel-src{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;padding-top:12px;border-top:0.5px solid var(--border);margin-top:auto}
+#panel-doc{display:none;margin-top:10px;padding:7px 12px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted2);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .15s;text-align:center;text-decoration:none}
+#panel-doc:hover{border-color:var(--red);color:var(--red)}
 .node{cursor:pointer}
-@media(max-width:640px){#panel.open{width:100vw;position:absolute;top:0;right:0;z-index:50;height:100%}#hint{display:none}#modal{width:92vw}}
+@media(max-width:640px){#panel.open{width:100vw;position:absolute;top:0;right:0;z-index:50;height:100%}#hint{display:none}}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="canvas">
     <canvas id="bg-canvas"></canvas>
-    <div id="loading">
-      <div class="load-ring"></div>
-      <div class="load-text" id="load-main-text">Loading conspiracy map</div>
-      <div class="load-sub" id="load-sub-text">Connecting to knowledge base...</div>
-    </div>
-    <div id="header">
-      <div id="logo">CONSPIRACY<span> //</span> MAP</div>
-      <div id="tagline" data-en="Theory mapping tool" data-fr="Cartographie des théories">Theory mapping tool</div>
-    </div>
-    <div id="breadcrumb"><span class="bc-item" id="bc-root">NWO</span><span class="bc-sep">›</span><span class="bc-item active" id="bc-current"></span></div>
+    <div id="loading"><div class="load-ring"></div><div class="load-text">Initializing map</div></div>
+    <div id="header"><div id="logo">CONSPIRACY<span> //</span> MAP</div><div id="tagline" data-en="Theory mapping tool" data-fr="Cartographie des theories">Theory mapping tool</div></div>
+    <div id="breadcrumb"></div>
     <div id="topbar">
-      <div id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">—</span></div>
-      <button class="top-btn" id="refresh-btn" onclick="refreshData()" title="Sync">↻</button>
-      <button class="top-btn" id="lang-toggle" onclick="toggleLang()">FR</button>
+      <div id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Local</span></div>
+      <button id="refresh-btn" class="top-btn icon" onclick="trySync()">&#8635;</button>
+      <div id="search-wrap">
+        <input id="search-input" type="text" placeholder="search..." oninput="onSearch(this.value)"/>
+        <button class="top-btn icon" onclick="toggleSearch()">&#9906;</button>
+      </div>
+      <button class="top-btn" id="expand-btn" onclick="toggleExpand()" data-en="ALL" data-fr="TOUT">ALL</button>
+      <button class="top-btn" id="lang-btn" onclick="toggleLang()">FR</button>
     </div>
     <div id="controls">
       <button class="ctrl-btn" onclick="doZoom(1.35)">+</button>
-      <button class="ctrl-btn" onclick="doZoom(0.74)">−</button>
-      <button class="ctrl-btn" onclick="doReset()">⊙</button>
+      <button class="ctrl-btn" onclick="doZoom(0.74)">&#8722;</button>
+      <button class="ctrl-btn" onclick="doReset()">&#8857;</button>
     </div>
-    <div id="hint" data-en="CLICK — EXPAND · DRAG — MOVE · SCROLL — ZOOM" data-fr="CLIC — DÉVELOPPER · GLISSER · SCROLL — ZOOM">CLICK — EXPAND · DRAG — MOVE · SCROLL — ZOOM</div>
+    <div id="back-area">
+      <button id="back-btn" onclick="drillUp()"><span class="back-arrow">&#8592;</span><span id="back-label">BACK</span></button>
+      <button class="ctrl-btn" onclick="doZoom(1.35)">+</button>
+      <button class="ctrl-btn" onclick="doZoom(0.74)">&#8722;</button>
+      <button class="ctrl-btn" onclick="doReset()">&#8857;</button>
+    </div>
+    <div id="hint" data-en="CLICK node WITH ARROW to drill down  .  CLICK leaf to read" data-fr="CLIC fleche = approfondir  .  CLIC feuille = lire">CLICK node WITH ARROW to drill down  .  CLICK leaf to read</div>
     <svg id="svg"></svg>
     <div id="tooltip"></div>
-    <button id="add-btn" onclick="openModal()">+</button>
   </div>
   <div id="panel">
     <div id="panel-inner">
-      <div id="panel-toprow">
-        <button id="panel-back" onclick="closePanel()" title="Back">←</button>
-        <div id="panel-bar"></div>
-      </div>
+      <div id="panel-toprow"><button id="panel-back" onclick="closePanel()">&#8592;</button><div id="panel-bar"></div></div>
       <div id="panel-title"></div>
-      <div id="panel-theme"></div>
+      <div id="panel-cat"></div>
       <div id="panel-desc"></div>
-      <div id="panel-tags"></div>
       <div id="panel-src"></div>
-      <a id="panel-open-doc" target="_blank" rel="noopener">Open in Google Docs ↗</a>
+      <a id="panel-doc" target="_blank" rel="noopener">Open in Google Docs &#8599;</a>
     </div>
-  </div>
-</div>
-<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div id="modal">
-    <h3 data-en="Add new argument" data-fr="Ajouter un argument">Add new argument</h3>
-    <p data-en="Written directly to the corresponding Google Doc." data-fr="Écrit directement dans le Google Doc correspondant.">Written directly to the corresponding Google Doc.</p>
-    <label class="form-label" data-en="Category" data-fr="Catégorie">Category</label>
-    <select id="modal-doc">
-      <option value="power" data-en="Power Structure" data-fr="Architecture du pouvoir">Power Structure</option>
-      <option value="actors" data-en="Key Actors" data-fr="Acteurs clés">Key Actors</option>
-      <option value="cognitive" data-en="Cognitive Matrix" data-fr="Matrice cognitive">Cognitive Matrix</option>
-      <option value="human" data-en="Attack on Humans" data-fr="Attaque de l'humain">Attack on Humans</option>
-      <option value="lockdown" data-en="World Lockdown" data-fr="Verrouillage du monde">World Lockdown</option>
-      <option value="occult" data-en="Occult Dimension" data-fr="Dimension occulte">Occult Dimension</option>
-      <option value="methods" data-en="Recurring Methods" data-fr="Méthodes récurrentes">Recurring Methods</option>
-      <option value="symbols" data-en="Symbolism" data-fr="Signature symbolique">Symbolism</option>
-    </select>
-    <label class="form-label" data-en="Content" data-fr="Contenu">Content</label>
-    <textarea id="modal-content" placeholder="Describe the argument, fact or theory..."></textarea>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()" data-en="Cancel" data-fr="Annuler">Cancel</button>
-      <button class="btn-submit" id="submit-btn" onclick="submitArgument()" data-en="Add to Doc" data-fr="Ajouter au Doc">Add to Doc</button>
-    </div>
-    <div id="modal-feedback"></div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script>
-var GAS_URL='https://script.google.com/macros/s/AKfycbzF3q2HqF49UdZaNvDWKoqtVErWkX7QQAxULw6ZETPWrX6Um9H9X9PjWxVkbkxZBL7M1w/exec';
-var AUTO_REFRESH=5*60*1000;
 var LANG=localStorage.getItem('cm_lang')||'en';
+var GAS_URL='https://script.google.com/macros/s/AKfycbzF3q2HqF49UdZaNvDWKoqtVErWkX7QQAxULw6ZETPWrX6Um9H9X9PjWxVkbkxZBL7M1w/exec';
 
-var I18N={
-  en:{loading:'Loading conspiracy map',connecting:'Connecting to knowledge base...',reading:'Reading Google Docs...',live:'Live',offline:'Offline',syncing:'Syncing...',noDesc:'Click to expand. Add content via the + button.',source:'Source',core:'CORE CONCEPT',saving:'Writing to Google Doc...',saved:'Saved to Google Doc',neterror:'Network error. Try again.',empty:'Please enter some content.'},
-  fr:{loading:'Chargement de la carte',connecting:'Connexion à la base...',reading:'Lecture des Google Docs...',live:'En direct',offline:'Hors ligne',syncing:'Synchronisation...',noDesc:'Cliquer pour développer. Ajouter via le bouton +.',source:'Source',core:'CONCEPT CENTRAL',saving:'Écriture dans le Doc...',saved:'Enregistré dans Google Doc',neterror:'Erreur réseau. Réessayer.',empty:'Veuillez entrer du contenu.'}
+var ND={
+center:{id:'center',label:'ELITES\nSATANISTES',type:'center',color:'#e02020',sub_en:'Depopulation . Total control . Transhumanism',sub_fr:'Depopulation . Controle total . Transhumanisme',desc_en:'Central hypothesis: a satanic elite network pursuing 3 final goals: depopulation, total control, transhumanism. Every domain of human life is a theater of this operation.',desc_fr:"Hypothese centrale : un reseau d'elites satanistes poursuivant 3 buts : depopulation, controle total, transhumanisme."},
+power:{id:'power',label:'POWER\nSTRUCTURE',type:'branch',color:'#e02020',docId:'1DcsPD0QebB5r4h69fYWfpRpIJC5dXn94o8WGekLIH9s',desc_en:'The architecture of power: how elites organize across 7 levels from the occult summit to the public-facing layer.',desc_fr:"L'architecture du pouvoir : 7 niveaux du sommet occulte a la couche publique."},
+actors:{id:'actors',label:'KEY\nACTORS',type:'branch',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Named individuals, dynasties, institutions and spiritual entities constituting the visible and invisible network.',desc_fr:'Individus nommes, dynasties, institutions et entites spirituelles constituant le reseau visible et invisible.'},
+means:{id:'means',label:'MEANS\n(4 CAT.)',type:'hub',color:'#ff4444',desc_en:'4 categories of means: cognitive control, direct human attack, world lockdown systems, occult dimension.',desc_fr:'4 categories de moyens : controle cognitif, attaque humaine, verrouillage monde, dimension occulte.'},
+methods:{id:'methods',label:'RECURRING\nMETHODS',type:'branch',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Transversal patterns: Hegelian dialectic, controlled opposition, predictive programming, systematic inversion.',desc_fr:'Patterns transversaux : dialectique hegelienne, opposition controlee, programmation predictive, inversion systematique.'},
+symbols:{id:'symbols',label:'SYMBOLISM',type:'branch',color:'#882020',docId:'1xzNhvuppSBD2CnUdklAcoERMjGSsAQ91_tm4nVF3EN8',desc_en:'The symbolic signature: how elites communicate allegiance and announce operations through mass rituals.',desc_fr:"La signature symbolique : comment les elites communiquent et annoncent leurs operations via les rituels de masse."},
+cognitive:{id:'cognitive',label:'A. COGNITIVE\nMATRIX',type:'branch',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Shaping what people believe is true: suppressed knowledge, false narratives, controlled history and education.',desc_fr:"Faconner ce qu'on croit vrai : savoirs supprimes, faux recits, histoire controlee."},
+human:{id:'human',label:'B. ATTACK\nON HUMANS',type:'branch',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Direct attacks on body and soul: food, pharma, vaccines, geoengineering, culture, MK-Ultra programming.',desc_fr:"Attaques directes sur corps et ame : alimentation, pharma, vaccins, geo-ingenierie, culture, MK-Ultra."},
+lockdown:{id:'lockdown',label:'C. WORLD\nLOCKDOWN',type:'branch',color:'#ff4444',docId:'1__RsR-MkUJO8_scOrDa_6KzXjnLS7PPT_Wli4ZdKAlA',desc_en:'Locking down external systems: finance, geopolitics, child trafficking, technology and architecture.',desc_fr:"Verrouillage des systemes exterieurs : finance, geopolitique, trafic d'enfants, technologie."},
+occult:{id:'occult',label:'D. OCCULT\nDIMENSION',type:'branch',color:'#ff2222',docId:'1j0Y4uJWWPq2UKyRS5QBapZFPOIguNwaiJ8N0G_hLhrQ',desc_en:'The true level of battle: demonic entities, rituals, energy portals through mass events, spiritual warfare.',desc_fr:'Le vrai niveau du combat : entites demoniques, rituels, portails energetiques, guerre spirituelle.'},
+p1:{id:'p1',label:'PYRAMIDE\n7 NIVEAUX',type:'leaf',color:'#e02020',docId:'1DcsPD0QebB5r4h69fYWfpRpIJC5dXn94o8WGekLIH9s',desc_en:'7-level pyramid: Satanic core, Bloodlines, Black nobility, Visible elites, Governments, Media, Public.',desc_fr:'Pyramide 7 niveaux : Noyau satanique, Lignees, Noblesse noire, Elites visibles, Gouvernements, Medias, Public.'},
+p2:{id:'p2',label:'LIENS ENTRE\nNIVEAUX',type:'leaf',color:'#e02020',docId:'1DcsPD0QebB5r4h69fYWfpRpIJC5dXn94o8WGekLIH9s',desc_en:'Vertical, horizontal, financial, familial and initiatic connections holding all levels together.',desc_fr:'Liens verticaux, horizontaux, financiers, familiaux et initiatiques entre les niveaux.'},
+p3:{id:'p3',label:'MECANISMES\nCOHESION',type:'leaf',color:'#e02020',docId:'1DcsPD0QebB5r4h69fYWfpRpIJC5dXn94o8WGekLIH9s',desc_en:'Cohesion mechanisms: blackmail, rewards, punishments and rituals keeping all actors aligned.',desc_fr:'Mecanismes de cohesion : compromission, recompense, punition et rituels maintenant les acteurs alignes.'},
+a1:{id:'a1',label:'ELITES\nVISIBLES',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Gates, Soros, Musk, Schwab — visible front men executing the agenda under public scrutiny.',desc_fr:'Gates, Soros, Musk, Schwab — facades visibles executant l\'agenda sous les projecteurs.'},
+a2:{id:'a2',label:'FAMILLES\nDYNASTIQUES',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Rothschild, Rockefeller, Windsor — dynastic bloodlines holding generational power across centuries.',desc_fr:'Rothschild, Rockefeller, Windsor — lignees dynastiques detenant un pouvoir generationnel.'},
+a3:{id:'a3',label:'INSTITUTIONS',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Vatican and Zionism as institutional power structures operating through religious and political legitimacy.',desc_fr:'Vatican et sionisme comme structures de pouvoir institutionnel via la legitimite religieuse et politique.'},
+a4:{id:'a4',label:'SOCIETES\nSECRETES',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Freemasons, Illuminati, Skull & Bones, Bilderberg, WEF — secret coordination networks.',desc_fr:'Francs-macons, Illuminati, Skull & Bones, Bilderberg, WEF — reseaux de coordination secrets.'},
+a5:{id:'a5',label:'DIRIGEANTS\nPOLITIQUES',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Political leaders as puppets: most are selected not elected, executing orders from above.',desc_fr:"Dirigeants politiques comme marionnettes : selectionnes pas elus, executant des ordres d'en haut."},
+a6:{id:'a6',label:'RELAIS\nMEDIATIQUES',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Celebrities, influencers and entertainers weaponized to spread the agenda and program the masses.',desc_fr:"Celebrites, influenceurs et artistes utilises pour diffuser l'agenda et programmer les masses."},
+a7:{id:'a7',label:'LEADERS\nSPIRITUELS',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Compromised spiritual leaders (Sadhguru, Dalai Lama) misdirecting genuine spiritual seekers.',desc_fr:'Leaders spirituels compromis (Sadhguru, Dalai-Lama) detournant les vrais chercheurs spirituels.'},
+a8:{id:'a8',label:'ENTITES\nSPIRITUELLES',type:'leaf',color:'#cc1818',docId:'1I2H2MAtRVsMufN7b5mqlOpZrnSWt_oP39WOAtAtNXa8',desc_en:'Baal, Satan, demonic entities — the ultimate masters whose agenda human elites execute for power.',desc_fr:"Baal, Satan, entites demoniques — les maitres ultimes dont les elites humaines executent l'agenda pour le pouvoir."},
+c1:{id:'c1',label:'SAVOIRS\nOCCULTES',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Suppressed ancestral knowledge: free energy, true history, natural healing, spiritual science.',desc_fr:'Connaissances ancestrales occultees : energie libre, vraie histoire, guerison naturelle, science spirituelle.'},
+c2:{id:'c2',label:'RECITS\nSCIENTIFIQUES',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Imposed scientific narratives: globe/flat Earth debate, evolution, Big Bang severing humanity from spiritual truth.',desc_fr:'Recits scientifiques imposes : debat Terre, evolution, Big Bang coupant l\'humanite de la verite spirituelle.'},
+c3:{id:'c3',label:'HISTOIRE\nFALSIFIEE',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Falsified history: Tartaria, false flag events, suppressed civilizations, rewritten timelines.',desc_fr:'Histoire falsifiee : Tartarie, faux drapeaux, civilisations supprimees, chronologies reecrites.'},
+c4:{id:'c4',label:'RELIGIONS\nINSTRUM.',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Instrumentalized religions: used to control, divide and conceal true spirituality.',desc_fr:'Religions instrumentalisees : pour controler, diviser et cacher la vraie spiritualite.'},
+c5:{id:'c5',label:'SYSTEME\nEDUCATIF',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Education system designed to create obedient consumers, systematically suppressing critical thinking.',desc_fr:'Systeme educatif cree pour former des consommateurs obeissants, supprimant la pensee critique.'},
+c6:{id:'c6',label:'MEDIAS &\nINFO',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Media and information control: mainstream narrative, fact-checkers as censors, algorithmic attention manipulation.',desc_fr:'Controle des medias : narratif dominant, fact-checkers comme censeurs, manipulation algorithmique.'},
+c7:{id:'c7',label:'ENERGIE\nLIBRE',type:'leaf',color:'#b01010',docId:'1Z0kAG6I8rNqtq-iZontzVQwBVKDm9YWocql13bzipMM',desc_en:'Suppressed free energy (Tesla etc.) kept hidden to maintain dependence on the controlled energy grid.',desc_fr:'Energie libre supprimee (Tesla etc.) maintenue secrete pour garder la dependance au reseau energetique controle.'},
+h1:{id:'h1',label:'ALIMENTATION',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Food as weapon: endocrine disruptors, GMOs, fluoride, ultra-processed food designed to weaken and sterilize.',desc_fr:"L'alimentation comme arme : perturbateurs endocriniens, OGM, fluorure, ultra-transforme pour affaiblir et steriliser."},
+h2:{id:'h2',label:'BIG PHARMA',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Big Pharma as control system: treat symptoms not causes, suppress natural cures, create lifelong dependency.',desc_fr:'Big Pharma comme systeme de controle : symptomes pas causes, supprimer remedes naturels, dependance a vie.'},
+h3:{id:'h3',label:'PANDEMIES\n& VACCINS',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Engineered pandemics and vaccines for population control, sterilization and graphene oxide injection.',desc_fr:'Pandemies et vaccins engineered pour controle population, sterilisation et injection d\'oxyde de graphene.'},
+h4:{id:'h4',label:'GEO-INGENIERIE\n& CLIMAT',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Geoengineering via chemtrails. Climate narrative used as pretext for control measures.',desc_fr:'Geo-ingenierie via chemtrails. Narratif climatique utilise comme pretexte aux mesures de controle.'},
+h5:{id:'h5',label:'CULTURE &\nDIVERTISS.',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Culture and entertainment as tools of distraction, desensitization and occult mass programming.',desc_fr:'Culture et divertissement comme outils de distraction, desensibilisation et programmation occulte de masse.'},
+h6:{id:'h6',label:'MK-ULTRA\nMIND CTRL',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'CIA MK-Ultra mind control applied to celebrities: alter egos, handlers and triggered behavior.',desc_fr:'Controle mental MK-Ultra CIA applique aux celebrites : alter egos, handlers et comportements declenches.'},
+h7:{id:'h7',label:'IDEOLOGIES\nCLIVANTES',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Weaponized divisive ideologies (wokism, radical feminism) to fragment and weaken societies.',desc_fr:'Ideologies clivantes armees (wokisme, feminisme radical) pour fragmenter et affaiblir les societes.'},
+h8:{id:'h8',label:'STERILITE\nAGENDA',type:'leaf',color:'#e83030',docId:'1zP7fdmWoPyL17mgj6HsKw6VjGIa-Azo0GgN-WHq5_Bc',desc_en:'Sterilization axis: disruptors, vaccines, gender confusion — all converging to reduce human fertility.',desc_fr:"Axe sterilite : perturbateurs, vaccins, agenda genre — tout converge pour reduire la fertilite humaine."},
+l1:{id:'l1',label:'FINANCE &\nMONNAIE',type:'leaf',color:'#ff4444',docId:'1__RsR-MkUJO8_scOrDa_6KzXjnLS7PPT_Wli4ZdKAlA',desc_en:'Central banking, CBDC, debt slavery — the financial system as primary population control mechanism.',desc_fr:'Banque centrale, CBDC, esclavage par la dette — systeme financier comme mecanisme principal de controle.'},
+l2:{id:'l2',label:'TRAFIC\nD\'ENFANTS',type:'leaf',color:'#ff4444',docId:'1__RsR-MkUJO8_scOrDa_6KzXjnLS7PPT_Wli4ZdKAlA',desc_en:"Elite pedocriminality and child trafficking as blackmail system, adrenochrome source and ritual fuel.",desc_fr:"Pedocriminalite d'elite et trafic d'enfants comme systeme de chantage, source d'adrenocrome et carburant rituel."},
+l3:{id:'l3',label:'GUERRE &\nGEOPOLITIQUE',type:'leaf',color:'#ff4444',docId:'1__RsR-MkUJO8_scOrDa_6KzXjnLS7PPT_Wli4ZdKAlA',desc_en:'Staged wars for economic destruction, population reduction and geopolitical restructuring.',desc_fr:'Guerres orchestrees pour destruction economique, reduction de population et restructuration geopolitique.'},
+l4:{id:'l4',label:'TECH &\nCONTROLE',type:'leaf',color:'#ff4444',docId:'1__RsR-MkUJO8_scOrDa_6KzXjnLS7PPT_Wli4ZdKAlA',desc_en:'Technology as control: social credit, CBDC, digital ID, AI surveillance, Neuralink brain implants.',desc_fr:'Technologie comme controle : credit social, CBDC, identite numerique, surveillance IA, Neuralink.'},
+l5:{id:'l5',label:'ARCHITECTURE\n& ENVIRON.',type:'leaf',color:'#ff4444',docId:'1__RsR-MkUJO8_scOrDa_6KzXjnLS7PPT_Wli4ZdKAlA',desc_en:'Smart cities and 15-minute cities: architectural control to limit movement and surveille populations.',desc_fr:'Villes intelligentes et 15 minutes : controle architectural pour limiter les deplacements et surveiller.'},
+o1:{id:'o1',label:'ENNEMI\nVERITABLE',type:'leaf',color:'#ff2222',docId:'1j0Y4uJWWPq2UKyRS5QBapZFPOIguNwaiJ8N0G_hLhrQ',desc_en:'The true enemy: demonic entities (Baal, Moloch) operating through possessed or compromised human vessels.',desc_fr:"Le veritable ennemi : entites demoniques (Baal, Moloch) operant a travers des vaisseaux humains possedes."},
+o2:{id:'o2',label:'RITUELS &\nSACRIFICES',type:'leaf',color:'#ff2222',docId:'1j0Y4uJWWPq2UKyRS5QBapZFPOIguNwaiJ8N0G_hLhrQ',desc_en:'Satanic rituals and child sacrifices as energetic fuel for demonic entities and adrenochrome.',desc_fr:"Rituels sataniques et sacrifices d'enfants comme carburant pour entites demoniques et adrenocrome."},
+o3:{id:'o3',label:'PORTAILS\nENERGETIQUES',type:'leaf',color:'#ff2222',docId:'1j0Y4uJWWPq2UKyRS5QBapZFPOIguNwaiJ8N0G_hLhrQ',desc_en:'Energy portals opened through mass events: Olympics, Super Bowl, Met Gala, Eurovision.',desc_fr:"Portails energetiques ouverts via les evenements de masse : JO, Super Bowl, Met Gala, Eurovision."},
+o4:{id:'o4',label:'COMBAT\nSPIRITUEL',type:'leaf',color:'#ff2222',docId:'1j0Y4uJWWPq2UKyRS5QBapZFPOIguNwaiJ8N0G_hLhrQ',desc_en:'Individual spiritual warfare: prayer, fasting, discernment and protection from demonic influence.',desc_fr:"Guerre spirituelle individuelle : priere, jeune, discernement et protection contre l'influence demonique."},
+o5:{id:'o5',label:'CLONAGE &\nHUMAIN ARTIF.',type:'leaf',color:'#ff2222',docId:'1j0Y4uJWWPq2UKyRS5QBapZFPOIguNwaiJ8N0G_hLhrQ',desc_en:'Human cloning and artificial humans replacing key figures and creating perfectly controllable vessels.',desc_fr:'Clonage humain et humains artificiels remplacant des personnages cles et creant des vaisseaux controlables.'},
+m1:{id:'m1',label:'HEGEL\nPRB-SOL',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Hegelian dialectic Problem-Reaction-Solution: engineer the crisis, let people panic, offer the pre-planned solution.',desc_fr:'Dialectique hegelienne PRobleme-Reaction-SOlution : creer la crise, laisser paniquer, offrir la solution pre-planifiee.'},
+m2:{id:'m2',label:'OPPOSITION\nCONTROLEE',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Both sides of every debate are controlled by the same handlers — theater maintaining the illusion of choice.',desc_fr:"Les deux cotes de chaque debat sont controles par les memes handlers — theatre pour l'illusion du choix."},
+m3:{id:'m3',label:'PROG.\nPREDICTIVE',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Predictive programming: plans announced in advance through films, music, art and rituals.',desc_fr:"Programmation predictive : plans annonces a l'avance via films, musique, art et rituels."},
+m4:{id:'m4',label:'INVERSION\nDU MAL',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Systematic inversion: presenting evil as good — vaccines as health, war as peace, surveillance as safety.',desc_fr:'Inversion systematique : presenter le mal comme le bien — vaccins comme sante, guerre comme paix.'},
+m5:{id:'m5',label:'DESENSIBILI-\nSATION',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Progressive desensitization to violence, sexuality, satanic symbols and transgression via entertainment.',desc_fr:'Desensibilisation progressive a la violence, sexualite, symboles sataniques via le divertissement.'},
+m6:{id:'m6',label:'SUR-\nMEDIATISATION',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Over-mediatization as a signal: extreme coverage hides something else happening beneath.',desc_fr:"Sur-mediatisation comme signal : couverture extreme = quelque chose d'autre se passe en dessous."},
+m7:{id:'m7',label:'ESCALADE\nPROGRESSIVE',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Progressive escalation: normalizing each step before introducing the next level of control.',desc_fr:'Escalade progressive : normaliser chaque etape avant d\'introduire le niveau suivant de controle.'},
+m8:{id:'m8',label:'EMOTION\nPERMANENTE',type:'leaf',color:'#c41a1a',docId:'1oqpjYhP1aLsRUlExlNf6a_VJI-7AlRUSbvEnouVKBFk',desc_en:'Permanent emotional states (fear, anger, outrage) preventing rational thinking and spiritual connection.',desc_fr:'Etats emotionnels permanents (peur, colere, indignation) empechant pensee rationnelle et connexion spirituelle.'},
+s1:{id:'s1',label:'SYMBOLES\nPRINCIPAUX',type:'leaf',color:'#882020',docId:'1xzNhvuppSBD2CnUdklAcoERMjGSsAQ91_tm4nVF3EN8',desc_en:'Main symbols: single eye, pyramid, checkerboard, butterfly, broken mirror, 666, inverted cross, owl, goat.',desc_fr:'Symboles principaux : oeil unique, pyramide, damier, papillon, miroir brise, 666, croix inversee, chouette, bouc.'},
+s2:{id:'s2',label:'OU LES\nTROUVER',type:'leaf',color:'#882020',docId:'1xzNhvuppSBD2CnUdklAcoERMjGSsAQ91_tm4nVF3EN8',desc_en:'Where to find symbols: logos, music videos, films, architecture, fashion and public buildings.',desc_fr:'Ou trouver les symboles : logos, clips, films, architecture, mode et batiments publics.'},
+s3:{id:'s3',label:'LIRE LES\nCELEBRITES',type:'leaf',color:'#882020',docId:'1xzNhvuppSBD2CnUdklAcoERMjGSsAQ91_tm4nVF3EN8',desc_en:'Reading celebrity behavior: handlers, alter egos, breakdowns, symbolic gestures and MK signals.',desc_fr:'Lire les comportements : handlers, alter egos, effondrements, gestes symboliques et signaux MK.'},
+s4:{id:'s4',label:'SYMBOLIQUE\nNOMINALE',type:'leaf',color:'#882020',docId:'1xzNhvuppSBD2CnUdklAcoERMjGSsAQ91_tm4nVF3EN8',desc_en:'Symbolic naming: Oscar, Rihanna, Marilyn, Beyonce — names encoding programmed role and allegiance.',desc_fr:'Symbolique nominale : Oscar, Rihanna, Marilyn, Beyonce — noms encodant leur role programme et allégeance.'},
+s5:{id:'s5',label:'ACTES\nRITUELS',type:'leaf',color:'#882020',docId:'1xzNhvuppSBD2CnUdklAcoERMjGSsAQ91_tm4nVF3EN8',desc_en:'Ritual acts: Olympics opening, Super Bowl halftime, Eurovision, Met Gala — mass energy harvesting.',desc_fr:"Actes rituels : JO, mi-temps Super Bowl, Eurovision, Met Gala — recolte d'energie de masse."}
 };
 
-var THEMES={
-  power:  {color:'#e02020',en:'Power Structure',   fr:'Architecture du pouvoir'},
-  actors: {color:'#cc1818',en:'Key Actors',         fr:'Acteurs clés'},
-  cognitive:{color:'#b01010',en:'Cognitive Matrix', fr:'Matrice cognitive'},
-  human:  {color:'#e83030',en:'Attack on Humans',   fr:"Attaque de l'humain"},
-  lockdown:{color:'#ff4444',en:'World Lockdown',    fr:'Verrouillage du monde'},
-  occult: {color:'#ff2222',en:'Occult Dimension',   fr:'Dimension occulte'},
-  methods:{color:'#c41a1a',en:'Recurring Methods',  fr:'Méthodes récurrentes'},
-  symbols:{color:'#882020',en:'Symbolism',          fr:'Signature symbolique'}
+var CHILDREN={
+center:['power','actors','means','methods','symbols'],
+means:['cognitive','human','lockdown','occult'],
+power:['p1','p2','p3'],
+actors:['a1','a2','a3','a4','a5','a6','a7','a8'],
+cognitive:['c1','c2','c3','c4','c5','c6','c7'],
+human:['h1','h2','h3','h4','h5','h6','h7','h8'],
+lockdown:['l1','l2','l3','l4','l5'],
+occult:['o1','o2','o3','o4','o5'],
+methods:['m1','m2','m3','m4','m5','m6','m7','m8'],
+symbols:['s1','s2','s3','s4','s5']
 };
 
-function t(k){return I18N[LANG][k]||I18N.en[k]||k;}
-function tTheme(k){return THEMES[k]?THEMES[k][LANG]||THEMES[k].en:'';}
-function getColor(theme){return THEMES[theme]?THEMES[theme].color:'#e02020';}
+var posCache={};
+function hasKids(id){return !!(CHILDREN[id]&&CHILDREN[id].length);}
 
-function applyLang(){
-  document.querySelectorAll('[data-en]').forEach(function(el){
-    var val=el.getAttribute('data-'+LANG)||el.getAttribute('data-en');
-    if(el.tagName==='TEXTAREA'){el.placeholder=el.getAttribute('data-'+LANG+'-placeholder')||el.getAttribute('data-en-placeholder')||'';}
-    else{el.textContent=val;}
-  });
-  document.querySelectorAll('#modal-doc option').forEach(function(opt){
-    var v=opt.getAttribute('data-'+LANG)||opt.getAttribute('data-en');
-    if(v) opt.textContent=v;
-  });
-  document.getElementById('load-main-text').textContent=t('loading');
-  document.getElementById('load-sub-text').textContent=t('connecting');
-  document.getElementById('lang-toggle').textContent=LANG==='en'?'FR':'EN';
-  document.getElementById('modal-content').placeholder=LANG==='fr'?'Décris l\'argument, le fait ou la théorie...':'Describe the argument, fact or theory...';
+var viewStack=[];
+var currentId='center';
+var expandAll=false;
+var searchQ='';
+var panelNode=null;
+var gRoot,sim,zoom,W=window.innerWidth,H=window.innerHeight;
+
+function drillDown(id){
+  if(!hasKids(id)){openPanel(ND[id]);return;}
+  viewStack.push({id:currentId,label:shortLabel(currentId)});
+  currentId=id;expandAll=false;
+  refreshView(true);updateBC();updateBack();closePanel();
 }
-
-function toggleLang(){
-  LANG=LANG==='en'?'fr':'en';
-  localStorage.setItem('cm_lang',LANG);
-  applyLang();
-  if(currentPanelNode) openPanel(currentPanelNode);
+function drillUp(){
+  if(!viewStack.length)return;
+  var prev=viewStack.pop();currentId=prev.id;expandAll=false;
+  refreshView(false);updateBC();updateBack();closePanel();
 }
-
-/* Background animation — subtle grid pulses, no RAF loop, CSS only */
-function initBg(){
-  var canvas=document.getElementById('bg-canvas');
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  var ctx=canvas.getContext('2d');
-  var W=canvas.width,H=canvas.height;
-  var step=80;
-  ctx.strokeStyle='rgba(224,32,32,0.04)';
-  ctx.lineWidth=.5;
-  for(var x=0;x<W;x+=step){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  for(var y=0;y<H;y+=step){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-  var rings=[
-    {x:W*.15,y:H*.2,r:120},
-    {x:W*.85,y:H*.75,r:180},
-    {x:W*.5,y:H*.5,r:280},
-    {x:W*.7,y:H*.15,r:90}
-  ];
-  rings.forEach(function(ring){
-    var grad=ctx.createRadialGradient(ring.x,ring.y,ring.r*.1,ring.x,ring.y,ring.r);
-    grad.addColorStop(0,'rgba(224,32,32,0.04)');
-    grad.addColorStop(1,'rgba(224,32,32,0)');
-    ctx.beginPath();
-    ctx.arc(ring.x,ring.y,ring.r,0,Math.PI*2);
-    ctx.fillStyle=grad;
-    ctx.fill();
-  });
-}
-
-var NODES=[],LINKS=[],expanded={},gRoot,sim,zoom,currentPanelNode=null;
-var W=window.innerWidth,H=window.innerHeight;
-var nodeHistory=[];
-
-function setStatus(state){
-  var dot=document.getElementById('sync-dot');
-  var txt=document.getElementById('sync-text');
-  dot.className='sync-dot '+state;
-  if(state==='live') txt.textContent=t('live')+' · '+new Date().toLocaleTimeString();
-  else if(state==='loading') txt.textContent=t('syncing');
-  else txt.textContent=t('offline');
-}
-
-function refreshData(){
-  var btn=document.getElementById('refresh-btn');
-  btn.classList.add('spinning');
-  setStatus('loading');
-  loadData(function(ok){
-    btn.classList.remove('spinning');
-    setStatus(ok?'live':'');
-  });
-}
-
-function loadData(cb){
-  fetch(GAS_URL+'?action=all',{redirect:'follow'})
-    .then(function(r){return r.json();})
-    .then(function(data){
-      if(data&&data.nodes&&data.nodes.length>0){
-        NODES=data.nodes;LINKS=data.links||[];
-        try{localStorage.setItem('conspiracy_data',JSON.stringify({nodes:NODES,links:LINKS}));}catch(e){}
-        initPositions();
-        if(gRoot) rerender();
-        if(cb) cb(true);
-      } else {loadFallback();if(cb) cb(false);}
-    })
-    .catch(function(){loadFallback();if(cb) cb(false);});
-}
-
-function loadFallback(){
-  try{var c=localStorage.getItem('conspiracy_data');if(c){var d=JSON.parse(c);NODES=d.nodes;LINKS=d.links;return;}}catch(e){}
-  NODES=buildFallbackNodes();LINKS=buildFallbackLinks();
-}
-
-function buildFallbackNodes(){
-  var ns=[{id:'center',label:'NEW WORLD\nORDER',type:'center',theme:null,
-    desc_en:'Central concept: alleged project by global elites to establish single world government, reduce population and control human life through technology.',
-    desc_fr:"Concept central : projet supposé des élites mondiales pour instaurer un gouvernement unique et contrôler la vie humaine.",
-    tags:['NWO','WEF','AGENDA 2030'],src:''}];
-  Object.keys(THEMES).forEach(function(k){
-    var th=THEMES[k];
-    ns.push({id:k,label:th.en.toUpperCase().replace(' ','\n'),type:'main',theme:k,
-      desc_en:'Click to expand. Add content via the + button.',
-      desc_fr:'Cliquer pour développer. Ajouter via le bouton +.',
-      tags:[],src:k});
-  });
-  return ns;
-}
-function buildFallbackLinks(){var ls=[];Object.keys(THEMES).forEach(function(k){ls.push({source:'center',target:k,ltype:'main'});});return ls;}
-
-function initPositions(){
-  var mains=NODES.filter(function(n){return n.type==='main';});
-  var a=(2*Math.PI)/mains.length;
-  mains.forEach(function(n,i){if(n.x===undefined){n.x=Math.cos(i*a-Math.PI/2)*210;n.y=Math.sin(i*a-Math.PI/2)*210;}});
-  var c=NODES.find(function(n){return n.id==='center';});
-  if(c&&c.x===undefined){c.x=0;c.y=0;}
-}
-
-function visData(){
-  var vn=NODES.filter(function(n){return n.type!=='sub'||expanded[n.parent];});
-  var ids={};vn.forEach(function(n){ids[n.id]=true;});
-  var vl=LINKS.filter(function(l){return ids[l.source.id||l.source]&&ids[l.target.id||l.target];});
-  return {nodes:vn,links:vl};
-}
-
-function spawnSubNodes(parentId){
-  var parent=NODES.find(function(n){return n.id===parentId;});if(!parent) return;
-  var subs=NODES.filter(function(n){return n.parent===parentId;});
-  var baseAngle=Math.atan2(parent.y||0,parent.x||0);var spread=Math.PI*.8;
-  subs.forEach(function(s,i){
-    var t2=subs.length>1?i/(subs.length-1):.5;
-    var angle=baseAngle+(t2-.5)*spread;
-    s.x=(parent.x||0)+Math.cos(angle)*90;
-    s.y=(parent.y||0)+Math.sin(angle)*90;
-    s.vx=0;s.vy=0;
-  });
-}
-
-function getDesc(n){return n['desc_'+LANG]||n.desc||n.desc_en||'';}
-function getNodeLabel(n){
-  if(n.type==='center') return n.label;
-  if(n.theme&&THEMES[n.theme]){
-    var lbl=THEMES[n.theme][LANG]||THEMES[n.theme].en;
-    var words=lbl.split(' ');
-    return words.length>2?words.slice(0,Math.ceil(words.length/2)).join(' ')+'\n'+words.slice(Math.ceil(words.length/2)).join(' '):lbl.toUpperCase();
+function bcGoTo(id){
+  if(id==='center'){viewStack=[];currentId='center';}
+  else{
+    var idx=viewStack.findIndex(function(v){return v.id===id;});
+    if(idx>=0){viewStack=viewStack.slice(0,idx+1);currentId=id;}
   }
-  return (n.label||'').toUpperCase();
+  expandAll=false;refreshView(false);updateBC();updateBack();closePanel();
+}
+function toggleExpand(){
+  expandAll=!expandAll;
+  document.getElementById('expand-btn').classList.toggle('active',expandAll);
+  refreshView(true);
+}
+function shortLabel(id){
+  var n=ND[id];if(!n)return id;
+  return (n.label||'').replace('\n',' ');
 }
 
-function rerender(){
-  var d=visData();
-  var lSel=gRoot.selectAll('line.link').data(d.links,function(l){return (l.source.id||l.source)+'-'+(l.target.id||l.target);});
+function buildData(){
+  if(expandAll)return buildAllData();
+  var cnode=Object.assign({},ND[currentId],{_role:'center'});
+  if(posCache[currentId]){cnode.x=posCache[currentId].x;cnode.y=posCache[currentId].y;}
+  else{cnode.x=0;cnode.y=0;}
+  var kids=CHILDREN[currentId]||[];
+  var nodes=[cnode];var links=[];
+  var a=(2*Math.PI)/Math.max(kids.length,1);
+  kids.forEach(function(cid,i){
+    var n=Object.assign({},ND[cid],{_role:'child',_par:currentId});
+    if(posCache[currentId+'_'+cid]){n.x=posCache[currentId+'_'+cid].x;n.y=posCache[currentId+'_'+cid].y;}
+    else{n.x=Math.cos(i*a-Math.PI/2)*200+(Math.random()-.5)*10;n.y=Math.sin(i*a-Math.PI/2)*200+(Math.random()-.5)*10;}
+    nodes.push(n);links.push({source:currentId,target:cid,ltype:'main'});
+  });
+  return{nodes:nodes,links:links};
+}
+
+function buildAllData(){
+  var nodes=[];var links=[];
+  function place(id,px,py,ang,sweep,depth){
+    var n=Object.assign({},ND[id],{_role:depth===0?'center':depth===1?'child':'sub'});
+    var r=depth*190;
+    n.x=depth===0?0:px+Math.cos(ang+sweep/2)*r;
+    n.y=depth===0?0:py+Math.sin(ang+sweep/2)*r;
+    nodes.push(n);
+    var kids=CHILDREN[id]||[];
+    var sub=kids.length>0?sweep/kids.length:0;
+    kids.forEach(function(kid,i){
+      links.push({source:id,target:kid,ltype:depth===0?'main':'sub'});
+      place(kid,n.x,n.y,ang+i*sub,sub,depth+1);
+    });
+  }
+  place('center',0,0,-Math.PI,2*Math.PI,0);
+  return{nodes:nodes,links:links};
+}
+
+function refreshView(anim){
+  var d=buildData();
+  renderLinks(d.links);
+  renderNodes(d.nodes,anim);
+  sim.nodes(d.nodes);
+  sim.force('link').links(d.links);
+  var kids=(CHILDREN[currentId]||[]).length;
+  var dist=expandAll?170:kids>6?140:200;
+  var chg=expandAll?-400:currentId==='center'?-800:-500;
+  sim.force('link').distance(dist);
+  sim.force('charge').strength(chg);
+  sim.alpha(.6).restart();
+}
+
+function renderLinks(links){
+  var lSel=gRoot.selectAll('line.link').data(links,function(l){return (l.source.id||l.source)+'-'+(l.target.id||l.target);});
   lSel.enter().append('line').attr('class','link')
-    .attr('stroke',function(l){var tid=l.target.id||l.target;var node=NODES.find(function(n){return n.id===tid;});return node?getColor(node.theme)+'50':'#e0202030';})
-    .attr('stroke-width',function(l){return l.ltype==='sub'?.6:1.2;})
+    .attr('stroke',function(l){var n=ND[l.target.id||l.target];return n?n.color+'45':'#e0202025';})
+    .attr('stroke-width',function(l){return l.ltype==='sub'?.5:1;})
     .attr('stroke-opacity',0)
     .transition().duration(400).attr('stroke-opacity',1);
   lSel.exit().transition().duration(250).attr('stroke-opacity',0).remove();
+}
 
-  var nSel=gRoot.selectAll('g.node').data(d.nodes,function(n){return n.id;});
+function nodeR(n){
+  if(n._role==='center')return 58;
+  if(n._role==='child')return hasKids(n.id)?36:28;
+  return 17;
+}
+
+function renderNodes(nodes,anim){
+  var nSel=gRoot.selectAll('g.node').data(nodes,function(n){return n.id;});
+  nSel.exit().transition().duration(350).attr('opacity',0)
+    .attr('transform',function(n){return 'translate('+(n.x||0)+','+(n.y||0)+') scale(0)';}).remove();
+
   var enter=nSel.enter().append('g').attr('class','node').attr('opacity',0)
     .call(d3.drag()
-      .on('start',function(e,n){if(!e.active) sim.alphaTarget(.3).restart();n.fx=n.x;n.fy=n.y;})
+      .on('start',function(e,n){if(!e.active)sim.alphaTarget(.3).restart();n.fx=n.x;n.fy=n.y;})
       .on('drag', function(e,n){n.fx=e.x;n.fy=e.y;})
-      .on('end',  function(e,n){if(!e.active) sim.alphaTarget(0);n.fx=null;n.fy=null;}))
-    .on('click',function(e,n){e.stopPropagation();onClick(n);})
-    .on('mouseover',function(e,n){showTip(e,n);hlNode(n.id,true);})
-    .on('mouseout', function(e,n){hideTip();hlNode(n.id,false);});
+      .on('end',  function(e,n){if(!e.active)sim.alphaTarget(0);n.fx=null;n.fy=null;}))
+    .on('click',function(e,n){e.stopPropagation();handleClick(n);})
+    .on('mouseover',function(e,n){showTip(e,n);hlConn(n.id,true);})
+    .on('mouseout', function(e,n){hideTip();hlConn(n.id,false);});
 
-  enter.append('circle').attr('class','outer-circle')
-    .attr('r',0).attr('fill','#000')
-    .attr('stroke',function(n){return getColor(n.theme);})
-    .attr('stroke-width',function(n){return n.type==='center'?2:n.type==='main'?1.2:.7;})
-    .attr('stroke-opacity',function(n){return n.type==='sub'?.45:.85;})
-    .transition().duration(550).ease(d3.easeBackOut.overshoot(1.3))
-    .attr('r',function(n){return n.type==='center'?56:n.type==='main'?34:19;});
+  enter.append('circle').attr('class','oc').attr('r',0).attr('fill','#020202')
+    .attr('stroke',function(n){return n.color||'#e02020';})
+    .attr('stroke-width',function(n){return n._role==='center'?2:n._role==='child'?1.2:.6;})
+    .attr('stroke-opacity',function(n){return n._role==='sub'?.4:.85;})
+    .transition().duration(anim?550:250).ease(d3.easeBackOut.overshoot(1.2))
+    .attr('r',nodeR);
 
-  enter.append('circle').attr('class','inner-circle')
-    .attr('r',0).attr('fill',function(n){return getColor(n.theme)+'12';}).attr('stroke','none')
-    .transition().duration(550).ease(d3.easeBackOut.overshoot(1.3))
-    .attr('r',function(n){return n.type==='center'?52:n.type==='main'?30:15;});
+  enter.append('circle').attr('class','ic').attr('r',0)
+    .attr('fill',function(n){return (n.color||'#e02020')+'12';}).attr('stroke','none')
+    .transition().duration(anim?550:250).ease(d3.easeBackOut.overshoot(1.2))
+    .attr('r',function(n){return nodeR(n)-3;});
+
+  enter.filter(function(n){return n._role==='center';})
+    .append('circle').attr('class','pulse').attr('r',58).attr('fill','none')
+    .attr('stroke',function(n){return n.color||'#e02020';})
+    .attr('stroke-width',.8).attr('stroke-opacity',.18).attr('pointer-events','none');
+
+  enter.filter(function(n){return n._role==='child'&&hasKids(n.id);})
+    .append('circle').attr('class','ddot').attr('cx',function(n){return nodeR(n)-6;}).attr('cy',function(n){return -(nodeR(n)-6);}).attr('r',0)
+    .attr('fill','#111').attr('stroke',function(n){return n.color||'#e02020';}).attr('stroke-width',.7).attr('pointer-events','none')
+    .transition().delay(anim?300:100).duration(300).attr('r',3.5);
 
   enter.each(function(n){
     var g=d3.select(this);
-    var rawLabel=getNodeLabel(n);
-    var lines=rawLabel.split('\n');
-    var fs=n.type==='center'?11:n.type==='main'?10:8;var lh=11;
-    var col=n.type==='center'?'#e02020':'#c0bcb8';
+    var lines=(n.label||'').split('\n');
+    var fs=n._role==='center'?11:n._role==='child'?10:8;
+    var lh=11;var col=n._role==='center'?'#e02020':'#bab6b2';
     var totalH=(lines.length-1)*lh;
     lines.forEach(function(line,i){
-      g.append('text').attr('class','node-label')
+      g.append('text').attr('class','nl')
         .attr('text-anchor','middle').attr('dominant-baseline','middle')
         .attr('y',-totalH/2+i*lh).attr('font-size',fs)
         .attr('font-family','Space Mono,monospace').attr('font-weight','700')
         .attr('fill',col).attr('pointer-events','none').attr('opacity',0)
         .text(line)
-        .transition().delay(250).duration(300).attr('opacity',1);
+        .transition().delay(anim?200:50).duration(300).attr('opacity',1);
     });
-    if(n.type==='main'){
-      g.append('circle').attr('class','expdot').attr('cx',21).attr('cy',-21).attr('r',0)
-        .attr('fill','#111').attr('stroke',getColor(n.theme)).attr('stroke-width',.7).attr('pointer-events','none')
-        .transition().delay(350).duration(300).attr('r',3.5);
-    }
-    /* Pulse ring on center */
-    if(n.type==='center'){
-      g.append('circle').attr('class','pulse-ring')
-        .attr('r',56).attr('fill','none')
-        .attr('stroke','#e02020').attr('stroke-width',.8).attr('stroke-opacity',.2)
-        .attr('pointer-events','none');
+    if(n._role==='center'&&(n.sub_en||n.sub_fr)){
+      var sub=LANG==='fr'?(n.sub_fr||n.sub_en):(n.sub_en||n.sub_fr);
+      if(sub) g.append('text').attr('class','sub-lbl')
+        .attr('text-anchor','middle').attr('dominant-baseline','middle')
+        .attr('y',lines.length*lh/2+11).attr('font-size',7)
+        .attr('font-family','Space Mono,monospace')
+        .attr('fill','rgba(224,32,32,.45)').attr('pointer-events','none')
+        .text(sub.length>35?sub.slice(0,33)+'...':sub);
     }
   });
 
-  /* Animate pulse ring */
-  gRoot.selectAll('.pulse-ring').each(function(){
-    var ring=d3.select(this);
-    (function pulse(){
-      ring.attr('r',56).attr('stroke-opacity',.25)
-        .transition().duration(2000).ease(d3.easeLinear)
-        .attr('r',80).attr('stroke-opacity',0)
-        .on('end',pulse);
-    })();
-  });
+  enter.transition().duration(anim?400:200).attr('opacity',1);
+  enter.merge(nSel).selectAll('.ddot').transition().duration(200)
+    .attr('fill',function(){var nd=d3.select(this.parentNode).datum();return expandAll?'#111':(viewStack.length&&viewStack[viewStack.length-1].id===nd.id?nd.color:'#111');});
 
-  enter.transition().duration(400).attr('opacity',1);
-
-  var all=enter.merge(nSel);
-  all.selectAll('.expdot').transition().duration(200)
-    .attr('fill',function(){var nd=d3.select(this.parentNode).datum();return expanded[nd.id]?getColor(nd.theme):'#111';});
-  all.selectAll('.outer-circle').transition().duration(200)
-    .attr('r',function(n){return n.type==='center'?56:n.type==='main'?34:19;});
-
-  nSel.exit().transition().duration(300).attr('opacity',0)
-    .attr('transform',function(n){return 'translate('+(n.x||0)+','+(n.y||0)+') scale(0)';})
-    .remove();
-
-  sim.nodes(d.nodes);sim.force('link').links(d.links);sim.alpha(.5).restart();
+  animatePulse();
+  applySearch();
 }
 
-function hlNode(id,on){
-  gRoot.selectAll('g.node').selectAll('circle:not(.expdot):not(.pulse-ring)').transition().duration(150)
+function animatePulse(){
+  gRoot.selectAll('.pulse').each(function(){
+    var r=d3.select(this);
+    (function p(){r.attr('r',58).attr('stroke-opacity',.18).transition().duration(2400).ease(d3.easeLinear).attr('r',88).attr('stroke-opacity',0).on('end',p);})();
+  });
+}
+
+function handleClick(n){
+  if(hasKids(n.id))drillDown(n.id);
+  else openPanel(n);
+}
+
+function hlConn(id,on){
+  gRoot.selectAll('g.node').selectAll('circle:not(.pulse)').transition().duration(120)
     .attr('opacity',function(){
-      if(!on) return 1;
+      if(!on)return 1;
       var nd=d3.select(this.parentNode).datum();
-      var connected=nd.id===id||LINKS.some(function(l){return (l.source.id||l.source)===id&&(l.target.id||l.target)===nd.id||(l.target.id||l.target)===id&&(l.source.id||l.source)===nd.id;});
-      return connected?1:.18;
+      if(nd.id===id)return 1;
+      var conn=gRoot.selectAll('line.link').data().some(function(l){
+        return (l.source.id||l.source)===id&&(l.target.id||l.target)===nd.id||(l.target.id||l.target)===id&&(l.source.id||l.source)===nd.id;
+      });
+      return conn?1:.12;
     });
-  gRoot.selectAll('line.link').transition().duration(150)
-    .attr('stroke-opacity',function(l){if(!on) return 1;return (l.source.id||l.source)===id||(l.target.id||l.target)===id?1:.06;});
+  gRoot.selectAll('line.link').transition().duration(120)
+    .attr('stroke-opacity',function(l){if(!on)return 1;return (l.source.id||l.source)===id||(l.target.id||l.target)===id?1:.05;});
 }
 
 function tick(){
-  gRoot.selectAll('line.link')
-    .attr('x1',function(l){return l.source.x;}).attr('y1',function(l){return l.source.y;})
-    .attr('x2',function(l){return l.target.x;}).attr('y2',function(l){return l.target.y;});
-  gRoot.selectAll('g.node').attr('transform',function(n){return 'translate('+(n.x||0)+','+(n.y||0)+')';});
-}
-
-function clusterForce(alpha){
-  NODES.forEach(function(n){
-    if(n.type==='sub'&&expanded[n.parent]){
-      var p=NODES.find(function(p){return p.id===n.parent;});
-      if(p&&p.x!==undefined){n.vx-=(n.x-p.x)*alpha*.12;n.vy-=(n.y-p.y)*alpha*.12;}
-    }
+  gRoot.selectAll('line.link').attr('x1',function(l){return l.source.x;}).attr('y1',function(l){return l.source.y;}).attr('x2',function(l){return l.target.x;}).attr('y2',function(l){return l.target.y;});
+  gRoot.selectAll('g.node').attr('transform',function(n){
+    posCache[n.id]={x:n.x,y:n.y};
+    if(n._par) posCache[n._par+'_'+n.id]={x:n.x,y:n.y};
+    return 'translate('+(n.x||0)+','+(n.y||0)+')';
   });
 }
 
-function updateBreadcrumb(n){
-  var bc=document.getElementById('breadcrumb');
-  var curr=document.getElementById('bc-current');
-  if(!n||n.type==='center'){bc.classList.remove('visible');return;}
-  var label=(n.type==='main'?tTheme(n.theme):n.label||'').replace('\n',' ');
-  curr.textContent=label;
-  bc.classList.add('visible');
+function toggleSearch(){var inp=document.getElementById('search-input');inp.classList.toggle('open');if(inp.classList.contains('open'))inp.focus();else{inp.value='';onSearch('');}}
+function onSearch(q){searchQ=q.toLowerCase().trim();applySearch();}
+function applySearch(){
+  if(!searchQ){gRoot.selectAll('g.node').attr('opacity',1);gRoot.selectAll('line.link').attr('stroke-opacity',1);return;}
+  gRoot.selectAll('g.node').attr('opacity',function(n){
+    var lbl=(n.label||'').toLowerCase();
+    var desc=(LANG==='fr'?(n.desc_fr||n.desc_en):(n.desc_en||n.desc_fr)||'').toLowerCase();
+    return lbl.indexOf(searchQ)>=0||desc.indexOf(searchQ)>=0?1:.08;
+  });
 }
 
-function onClick(n){
-  if(n.type==='main'){
-    var was=expanded[n.id];
-    expanded[n.id]=!expanded[n.id];
-    if(!was) spawnSubNodes(n.id);
-    rerender();
+function updateBC(){
+  var bc=document.getElementById('breadcrumb');bc.innerHTML='';
+  var items=[{id:'center',label:'NWO'}];
+  viewStack.forEach(function(v){if(v.id!=='center')items.push({id:v.id,label:shortLabel(v.id)});});
+  if(currentId!=='center')items.push({id:currentId,label:shortLabel(currentId)});
+  items.forEach(function(item,i){
+    if(i>0){var sep=document.createElement('span');sep.className='bc-sep';sep.textContent='>';bc.appendChild(sep);}
+    var el=document.createElement('span');
+    el.className='bc-item'+(i===items.length-1?' current':'');
+    el.textContent=item.label.length>14?item.label.slice(0,13)+'...':item.label;
+    if(i<items.length-1)(function(id){el.onclick=function(){bcGoTo(id);};})(item.id);
+    bc.appendChild(el);
+  });
+}
+
+function updateBack(){
+  var ba=document.getElementById('back-area');
+  var ctrl=document.getElementById('controls');
+  if(viewStack.length>0){
+    ba.classList.add('visible');ctrl.style.display='none';
+    var prev=viewStack[viewStack.length-1];
+    var lbl=shortLabel(prev.id);
+    document.getElementById('back-label').textContent=lbl.length>14?lbl.slice(0,13)+'...':lbl;
+  } else {
+    ba.classList.remove('visible');ctrl.style.display='flex';
   }
-  openPanel(n);
 }
 
 function openPanel(n){
-  currentPanelNode=n;
-  var color=getColor(n.theme);
+  panelNode=n;var color=n.color||'#e02020';
   document.getElementById('panel-bar').style.background=color;
-  document.getElementById('panel-title').textContent=getNodeLabel(n).replace('\n',' ');
-  var themeEl=document.getElementById('panel-theme');
-  themeEl.textContent=n.theme?tTheme(n.theme):t('core');
-  themeEl.style.color=color;
-  document.getElementById('panel-desc').textContent=getDesc(n)||t('noDesc');
-  document.getElementById('panel-tags').innerHTML=(n.tags||[]).filter(Boolean).map(function(tag){return '<span class="ptag">'+tag+'</span>';}).join('');
-  document.getElementById('panel-src').textContent=t('source')+' — '+(n.src||'—');
-  var docLink=document.getElementById('panel-open-doc');
-  if(n.docId){docLink.href='https://docs.google.com/document/d/'+n.docId+'/edit';docLink.style.display='block';docLink.textContent=LANG==='fr'?'Ouvrir dans Google Docs ↗':'Open in Google Docs ↗';}
-  else{docLink.style.display='none';}
+  document.getElementById('panel-title').textContent=(n.label||'').replace('\n',' ');
+  var cat=document.getElementById('panel-cat');
+  cat.textContent=LANG==='fr'?'ARGUMENT':'ARGUMENT';cat.style.color=color;
+  var desc=LANG==='fr'?(n.desc_fr||n.desc_en):(n.desc_en||n.desc_fr);
+  document.getElementById('panel-desc').textContent=desc||'';
+  document.getElementById('panel-src').textContent='Source — Conspiracy Docs';
+  var dl=document.getElementById('panel-doc');
+  if(n.docId){dl.href='https://docs.google.com/document/d/'+n.docId+'/edit';dl.style.display='block';dl.textContent=LANG==='fr'?'Ouvrir dans Google Docs':'Open in Google Docs';}
+  else dl.style.display='none';
   document.getElementById('panel').classList.add('open');
-  updateBreadcrumb(n);
-  /* Re-animate panel content */
-  ['panel-title','panel-theme','panel-desc','panel-tags','panel-src','panel-open-doc'].forEach(function(id,i){
-    var el=document.getElementById(id);
-    el.style.animation='none';
-    el.offsetHeight;
-    el.style.animation='slide-up .3s '+(i*.05)+'s ease both';
+  ['panel-title','panel-cat','panel-desc','panel-src'].forEach(function(id,i){var el=document.getElementById(id);el.style.animation='none';el.offsetHeight;el.style.animation='slide-up .3s '+(i*.06)+'s ease both';});
+}
+function closePanel(){document.getElementById('panel').classList.remove('open');panelNode=null;}
+
+function toggleLang(){
+  LANG=LANG==='en'?'fr':'en';localStorage.setItem('cm_lang',LANG);
+  document.getElementById('lang-btn').textContent=LANG==='en'?'FR':'EN';
+  document.querySelectorAll('[data-en]').forEach(function(el){var v=el.getAttribute('data-'+LANG)||el.getAttribute('data-en');if(v)el.textContent=v;});
+  if(panelNode)openPanel(panelNode);
+}
+
+function trySync(){
+  var btn=document.getElementById('refresh-btn');btn.classList.add('spinning');
+  var dot=document.getElementById('sync-dot');var txt=document.getElementById('sync-text');
+  dot.className='sync-dot loading';txt.textContent='Syncing...';
+  fetch(GAS_URL+'?action=all',{redirect:'follow'}).then(function(r){return r.json();})
+    .then(function(){btn.classList.remove('spinning');dot.className='sync-dot live';txt.textContent='Live . '+new Date().toLocaleTimeString();})
+    .catch(function(){btn.classList.remove('spinning');dot.className='sync-dot';txt.textContent='Local';});
+}
+
+function initBg(){
+  var c=document.getElementById('bg-canvas');c.width=W;c.height=H;
+  var ctx=c.getContext('2d');
+  ctx.strokeStyle='rgba(224,32,32,0.03)';ctx.lineWidth=.5;
+  for(var x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(var y=0;y<H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  [{x:W*.5,y:H*.5,r:350},{x:W*.1,y:H*.15,r:160},{x:W*.9,y:H*.85,r:220}].forEach(function(rg){
+    var g=ctx.createRadialGradient(rg.x,rg.y,0,rg.x,rg.y,rg.r);
+    g.addColorStop(0,'rgba(224,32,32,0.055)');g.addColorStop(1,'rgba(224,32,32,0)');
+    ctx.beginPath();ctx.arc(rg.x,rg.y,rg.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
   });
 }
 
-function closePanel(){
-  document.getElementById('panel').classList.remove('open');
-  currentPanelNode=null;
-  document.getElementById('breadcrumb').classList.remove('visible');
-}
-
-function openModal(){document.getElementById('modal-overlay').classList.add('open');setTimeout(function(){document.getElementById('modal-content').focus();},100);}
-function closeModal(){
-  document.getElementById('modal-overlay').classList.remove('open');
-  document.getElementById('modal-content').value='';
-  document.getElementById('modal-feedback').textContent='';
-  var btn=document.getElementById('submit-btn');
-  btn.disabled=false;btn.textContent=LANG==='fr'?'Ajouter au Doc':'Add to Doc';
-}
-
-function submitArgument(){
-  var docKey=document.getElementById('modal-doc').value;
-  var content=document.getElementById('modal-content').value.trim();
-  var fb=document.getElementById('modal-feedback');
-  var btn=document.getElementById('submit-btn');
-  if(!content){fb.style.color='var(--red)';fb.textContent=t('empty');return;}
-  btn.disabled=true;btn.textContent='...';
-  fb.style.color='var(--muted2)';fb.textContent=t('saving');
-  var xhr=new XMLHttpRequest();
-  xhr.open('POST',GAS_URL,true);
-  xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
-  xhr.onload=function(){
-    try{
-      var d=JSON.parse(xhr.responseText);
-      if(d.success){fb.style.color='#22c55e';fb.textContent=t('saved');setTimeout(function(){closeModal();refreshData();},1500);}
-      else{fb.style.color='var(--red)';fb.textContent='Error: '+(d.error||'?');btn.disabled=false;btn.textContent=LANG==='fr'?'Ajouter au Doc':'Add to Doc';}
-    }catch(e){fb.style.color='#22c55e';fb.textContent=t('saved');setTimeout(function(){closeModal();refreshData();},1500);}
-  };
-  xhr.onerror=function(){fb.style.color='#22c55e';fb.textContent=t('saved');setTimeout(function(){closeModal();refreshData();},1500);};
-  xhr.send(JSON.stringify({docKey:docKey,content:content}));
-}
-
 var tip=document.getElementById('tooltip');
-function showTip(e,n){tip.textContent=getNodeLabel(n).replace('\n',' ');tip.style.opacity='1';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';}
+function showTip(e,n){tip.textContent=(n.label||'').replace('\n',' ')+(hasKids(n.id)?' \u2192':'');tip.style.opacity='1';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';}
 function hideTip(){tip.style.opacity='0';}
 function doZoom(k){d3.select('#svg').transition().duration(280).call(zoom.scaleBy,k);}
 function doReset(){d3.select('#svg').transition().duration(600).ease(d3.easeCubicInOut).call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2));}
 
 window.addEventListener('load',function(){
-  applyLang();
-  initBg();
-  W=window.innerWidth;H=window.innerHeight;
+  document.getElementById('lang-btn').textContent=LANG==='en'?'FR':'EN';
+  initBg();W=window.innerWidth;H=window.innerHeight;
   var svgEl=d3.select('#svg');
   gRoot=svgEl.append('g').attr('transform','translate('+W/2+','+H/2+')');
-  zoom=d3.zoom().scaleExtent([.15,5]).on('zoom',function(e){gRoot.attr('transform',e.transform);});
+  zoom=d3.zoom().scaleExtent([.1,7]).on('zoom',function(e){gRoot.attr('transform',e.transform);});
   svgEl.call(zoom).on('dblclick.zoom',null);
   svgEl.call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2));
   svgEl.on('click',function(){closePanel();});
   sim=d3.forceSimulation()
-    .force('link',d3.forceLink().id(function(n){return n.id;}).distance(function(l){return l.ltype==='sub'?85:190;}).strength(function(l){return l.ltype==='sub'?1.4:.8;}))
-    .force('charge',d3.forceManyBody().strength(function(n){return n.type==='center'?-800:n.type==='main'?-450:-140;}))
+    .force('link',d3.forceLink().id(function(n){return n.id;}).distance(200).strength(.9))
+    .force('charge',d3.forceManyBody().strength(-800))
     .force('center',d3.forceCenter(0,0))
-    .force('collide',d3.forceCollide().radius(function(n){return n.type==='center'?72:n.type==='main'?58:36;}).strength(.8))
-    .force('cluster',clusterForce)
+    .force('collide',d3.forceCollide().radius(function(n){return nodeR(n)+12;}).strength(.85))
     .on('tick',tick);
-  loadData(function(ok){
+  setTimeout(function(){
     document.getElementById('loading').classList.add('hidden');
-    setStatus(ok?'live':'');
-    rerender();
+    refreshView(true);updateBC();updateBack();
     setTimeout(function(){document.getElementById('loading').style.display='none';},800);
-  });
-  setInterval(refreshData,AUTO_REFRESH);
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){});}
+  },500);
+  setInterval(trySync,5*60*1000);
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(function(){});
 });
 window.addEventListener('resize',function(){W=window.innerWidth;H=window.innerHeight;initBg();});
 </script>
