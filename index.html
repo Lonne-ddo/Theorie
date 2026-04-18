@@ -288,13 +288,20 @@ function refreshView(anim){
 }
 
 function renderLinks(links){
-  var lSel=gRoot.selectAll('line.link').data(links,function(l){return (l.source.id||l.source)+'-'+(l.target.id||l.target);});
+  var nodeIds={};
+  gRoot.selectAll('g.node').data().forEach(function(n){nodeIds[n.id]=true;});
+  var validLinks=links.filter(function(l){
+    var sid=l.source.id||l.source;
+    var tid=l.target.id||l.target;
+    return nodeIds[sid]&&nodeIds[tid];
+  });
+  var lSel=gRoot.selectAll('line.link').data(validLinks,function(l){return (l.source.id||l.source)+'-'+(l.target.id||l.target);});
   lSel.enter().append('line').attr('class','link')
-    .attr('stroke',function(l){var n=ND[l.target.id||l.target];return n?n.color+'45':'#e0202025';})
-    .attr('stroke-width',function(l){return l.ltype==='sub'?.5:1;})
+    .attr('stroke',function(l){var n=ND[l.target.id||l.target];return n?n.color+(l.ltype==='sub'?'35':'55'):'#e0202030';})
+    .attr('stroke-width',function(l){return l.ltype==='sub'?.6:1.2;})
     .attr('stroke-opacity',0)
-    .transition().duration(400).attr('stroke-opacity',1);
-  lSel.exit().transition().duration(250).attr('stroke-opacity',0).remove();
+    .transition().duration(350).attr('stroke-opacity',1);
+  lSel.exit().transition().duration(200).attr('stroke-opacity',0).remove();
 }
 
 function nodeR(n){
