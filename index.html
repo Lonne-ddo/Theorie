@@ -32,10 +32,6 @@ canvas#bg-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity
 .bc-item.current{color:var(--muted2);cursor:default}
 .bc-sep{opacity:.35;pointer-events:none}
 #topbar{position:absolute;top:20px;right:22px;display:flex;align-items:center;gap:6px;z-index:10}
-#search-wrap{position:relative;display:flex;align-items:center}
-#search-input{width:0;padding:0;background:var(--surface);border:0.5px solid transparent;border-radius:3px;color:var(--text);font-size:9px;font-family:'Space Mono',monospace;letter-spacing:.06em;outline:none;transition:width .3s,padding .3s,border-color .3s}
-#search-input.open{width:120px;padding:4px 8px;border-color:var(--border)}
-#search-input:focus{border-color:var(--red)}
 .top-btn{height:26px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Space Mono',monospace;padding:0 8px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .top-btn:hover{border-color:var(--red);color:var(--red)}
 .top-btn.active{border-color:var(--red);color:var(--red);background:rgba(224,32,32,.08)}
@@ -72,6 +68,26 @@ canvas#bg-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity
 #panel-doc{display:none;margin-top:10px;padding:7px 12px;border-radius:3px;background:transparent;border:0.5px solid var(--border);color:var(--muted2);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .15s;text-align:center;text-decoration:none}
 #panel-doc:hover{border-color:var(--red);color:var(--red)}
 .node{cursor:pointer}
+#search-overlay{position:fixed;inset:0;background:rgba(8,8,8,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:200;display:none;flex-direction:column;align-items:center;padding:80px 20px 40px;overflow-y:auto}
+#search-overlay.open{display:flex;animation:fade-in .25s ease both}
+#search-box{display:flex;align-items:center;gap:10px;width:100%;max-width:640px;background:var(--surface);border:0.5px solid var(--border);border-radius:6px;padding:10px 14px;transition:border-color .2s}
+#search-box:focus-within{border-color:var(--red)}
+#search-big-icon{font-size:18px;color:var(--red);flex-shrink:0}
+#search-big{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px;font-family:'Syne',sans-serif;letter-spacing:.02em}
+#search-big::placeholder{color:var(--muted2)}
+#search-close{background:transparent;border:0;color:var(--muted2);font-size:22px;cursor:pointer;line-height:1;padding:0 4px;transition:color .15s}
+#search-close:hover{color:var(--red)}
+#search-results-count{width:100%;max-width:640px;margin-top:14px;font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+#search-results{width:100%;max-width:640px;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.sr-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:4px;cursor:pointer;transition:all .15s;animation:slide-up .3s ease both}
+.sr-item:hover{border-color:var(--red);background:var(--surface2);transform:translateX(2px)}
+.sr-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sr-content{flex:1;min-width:0}
+.sr-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;letter-spacing:.02em}
+.sr-desc{font-size:11px;color:#585450;line-height:1.55;margin-bottom:5px}
+.sr-path{font-size:8.5px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.sr-badge{font-size:8px;font-family:'Space Mono',monospace;padding:3px 7px;border:0.5px solid;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;align-self:flex-start}
+mark{background:rgba(224,32,32,.18);color:var(--red);padding:0 2px;border-radius:2px}
 @media(max-width:640px){#panel.open{width:100vw;position:absolute;top:0;right:0;z-index:50;height:100%}#hint{display:none}}
 </style>
 </head>
@@ -85,10 +101,7 @@ canvas#bg-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity
     <div id="topbar">
       <div id="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-text">Local</span></div>
       <button id="refresh-btn" class="top-btn icon" onclick="trySync()">&#8635;</button>
-      <div id="search-wrap">
-        <input id="search-input" type="text" placeholder="search..." oninput="onSearch(this.value)"/>
-        <button class="top-btn icon" onclick="toggleSearch()">&#9906;</button>
-      </div>
+      <button class="top-btn icon" onclick="toggleSearch()">&#9906;</button>
       <button class="top-btn" id="expand-btn" onclick="toggleExpand()" data-en="ALL" data-fr="TOUT">ALL</button>
       <button class="top-btn" id="lang-btn" onclick="toggleLang()">FR</button>
     </div>
@@ -116,6 +129,15 @@ canvas#bg-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity
       <div id="panel-src"></div>
       <a id="panel-doc" target="_blank" rel="noopener">Open in Google Docs &#8599;</a>
     </div>
+  </div>
+  <div id="search-overlay" onclick="if(event.target===this)closeSearch()">
+    <div id="search-box">
+      <span id="search-big-icon">&#8981;</span>
+      <input id="search-big" type="text" placeholder="Search a concept, actor, method..." oninput="doSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearch()"/>
+      <button id="search-close" onclick="closeSearch()">&times;</button>
+    </div>
+    <div id="search-results-count"></div>
+    <div id="search-results"></div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -208,16 +230,18 @@ var searchQ='';
 var panelNode=null;
 var gRoot,sim,zoom,W=window.innerWidth,H=window.innerHeight;
 
+function getDesc(n){return LANG==='fr'?(n.desc_fr||n.desc_en||''):(n.desc_en||n.desc_fr||'');}
+
 function drillDown(id){
   if(!hasKids(id)){openPanel(ND[id]);return;}
   viewStack.push({id:currentId,label:shortLabel(currentId)});
   currentId=id;expandAll=false;
-  refreshView(true);updateBC();updateBack();closePanel();
+  refreshView(true);updateBC();updateBackBtn();closePanel();
 }
 function drillUp(){
   if(!viewStack.length)return;
   var prev=viewStack.pop();currentId=prev.id;expandAll=false;
-  refreshView(false);updateBC();updateBack();closePanel();
+  refreshView(false);updateBC();updateBackBtn();closePanel();
 }
 function bcGoTo(id){
   if(id==='center'){viewStack=[];currentId='center';}
@@ -225,7 +249,7 @@ function bcGoTo(id){
     var idx=viewStack.findIndex(function(v){return v.id===id;});
     if(idx>=0){viewStack=viewStack.slice(0,idx+1);currentId=id;}
   }
-  expandAll=false;refreshView(false);updateBC();updateBack();closePanel();
+  expandAll=false;refreshView(false);updateBC();updateBackBtn();closePanel();
 }
 function toggleExpand(){
   expandAll=!expandAll;
@@ -416,14 +440,108 @@ function tick(){
   });
 }
 
-function toggleSearch(){var inp=document.getElementById('search-input');inp.classList.toggle('open');if(inp.classList.contains('open'))inp.focus();else{inp.value='';onSearch('');}}
-function onSearch(q){searchQ=q.toLowerCase().trim();applySearch();}
+function toggleSearch(){
+  var ov=document.getElementById('search-overlay');
+  ov.classList.add('open');
+  setTimeout(function(){document.getElementById('search-big').focus();},80);
+}
+function closeSearch(){
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-big').value='';
+  document.getElementById('search-results').innerHTML='';
+  document.getElementById('search-results-count').textContent='';
+}
+function getNodePath(id){
+  for(var parent in CHILDREN){
+    if(CHILDREN[parent]&&CHILDREN[parent].indexOf(id)>=0){
+      if(parent==='center') return 'NWO';
+      var pn=ND[parent];
+      var pl=(pn&&pn.label||parent).replace('\n',' ');
+      return 'NWO \u203A '+pl;
+    }
+  }
+  return 'NWO';
+}
+function highlight(text,q){
+  if(!q||!text) return text||'';
+  var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return text.replace(re,'<mark>$1</mark>');
+}
+function doSearch(q){
+  var res=document.getElementById('search-results');
+  var cnt=document.getElementById('search-results-count');
+  q=q.trim();
+  if(!q){res.innerHTML='';cnt.textContent='';return;}
+  var matches=[];
+  Object.keys(ND).forEach(function(id){
+    if(id==='center') return;
+    var n=ND[id];
+    var lbl=(n.label||'').replace('\n',' ');
+    var desc=getDesc(n)||'';
+    var score=0;
+    var lq=q.toLowerCase();
+    if(lbl.toLowerCase().indexOf(lq)>=0) score+=3;
+    if(desc.toLowerCase().indexOf(lq)>=0) score+=1;
+    if(score>0) matches.push({n:n,id:id,score:score,lbl:lbl,desc:desc});
+  });
+  matches.sort(function(a,b){return b.score-a.score;});
+  cnt.textContent=matches.length+' result'+(matches.length!==1?'s':'');
+  if(matches.length===0){
+    res.innerHTML='<div style="text-align:center;padding:32px 0;font-family:Space Mono,monospace;font-size:10px;color:var(--muted)">No results for "'+q+'"</div>';
+    return;
+  }
+  res.innerHTML=matches.slice(0,20).map(function(m){
+    var isLeaf=m.n.type==='leaf';
+    var badge=isLeaf?'argument':'category';
+    var color=m.n.color||'#e02020';
+    var path=getNodePath(m.id);
+    var hlLbl=highlight(m.lbl,q);
+    var hlDesc=highlight(m.desc.slice(0,120)+(m.desc.length>120?'...':''),q);
+    return '<div class="sr-item" onclick="goToNode(\''+m.id+'\')">'
+      +'<div class="sr-dot" style="background:'+color+';margin-top:5px"></div>'
+      +'<div class="sr-content">'
+        +'<div class="sr-title">'+hlLbl+'</div>'
+        +'<div class="sr-desc">'+hlDesc+'</div>'
+        +'<div class="sr-path">'+path+'</div>'
+      +'</div>'
+      +'<div class="sr-badge" style="color:'+color+';border-color:'+color+'40">'+badge+'</div>'
+    +'</div>';
+  }).join('');
+}
+function goToNode(id){
+  closeSearch();
+  var n=ND[id];if(!n) return;
+  var path=[];
+  function findPath(targetId,fromId){
+    if(fromId===targetId) return true;
+    var kids=CHILDREN[fromId]||[];
+    for(var i=0;i<kids.length;i++){
+      if(kids[i]===targetId||findPath(targetId,kids[i])){
+        path.unshift(fromId);return true;
+      }
+    }
+    return false;
+  }
+  findPath(id,'center');
+  viewStack=[];currentId='center';
+  var parentId='center';
+  if(path.length>1){
+    for(var i=1;i<path.length;i++){
+      viewStack.push({id:parentId,label:shortLabel(parentId)});
+      parentId=path[i];
+    }
+    currentId=parentId;
+  }
+  expandAll=false;
+  refreshView(true);updateBC();updateBackBtn();
+  setTimeout(function(){openPanel(n);},400);
+}
 function applySearch(){
-  if(!searchQ){gRoot.selectAll('g.node').attr('opacity',1);gRoot.selectAll('line.link').attr('stroke-opacity',1);return;}
+  if(!searchQ){gRoot.selectAll('g.node').attr('opacity',1);return;}
   gRoot.selectAll('g.node').attr('opacity',function(n){
     var lbl=(n.label||'').toLowerCase();
-    var desc=(LANG==='fr'?(n.desc_fr||n.desc_en):(n.desc_en||n.desc_fr)||'').toLowerCase();
-    return lbl.indexOf(searchQ)>=0||desc.indexOf(searchQ)>=0?1:.08;
+    var de=(getDesc(n)||'').toLowerCase();
+    return lbl.indexOf(searchQ)>=0||de.indexOf(searchQ)>=0?1:.06;
   });
 }
 
@@ -442,7 +560,7 @@ function updateBC(){
   });
 }
 
-function updateBack(){
+function updateBackBtn(){
   var ba=document.getElementById('back-area');
   var ctrl=document.getElementById('controls');
   if(viewStack.length>0){
@@ -524,7 +642,7 @@ window.addEventListener('load',function(){
     .on('tick',tick);
   setTimeout(function(){
     document.getElementById('loading').classList.add('hidden');
-    refreshView(true);updateBC();updateBack();
+    refreshView(true);updateBC();updateBackBtn();
     setTimeout(function(){document.getElementById('loading').style.display='none';},800);
   },500);
   setInterval(trySync,5*60*1000);
