@@ -163,6 +163,50 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--txt);font-fami
 .sr-path{font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:3px}
 mark{background:rgba(224,32,32,.2);color:#e02020;border-radius:2px;padding:0 1px}
 @media(max-width:640px){#sections-grid{grid-template-columns:1fr 1fr}#mm-panel.open{width:100vw;position:absolute}}
+
+#view-youtube{padding:0}
+#yt-inner{padding:16px;max-width:720px;margin:0 auto;padding-bottom:100px}
+#yt-title-bar{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+#yt-title-bar::before{content:'';width:3px;height:12px;background:#ff4444;border-radius:2px;display:block}
+#yt-url-row{display:flex;gap:8px;margin-bottom:8px}
+#yt-url{flex:1;padding:10px 12px;background:var(--s1);border:0.5px solid var(--bd);border-radius:5px;color:var(--txt);font-size:12px;font-family:'Space Mono',monospace;outline:none;transition:border-color .15s}
+#yt-url:focus{border-color:#ff4444}
+#yt-lang{width:60px;padding:10px 8px;background:var(--s1);border:0.5px solid var(--bd);border-radius:5px;color:var(--txt);font-size:11px;font-family:'Space Mono',monospace;outline:none;cursor:pointer}
+#yt-fetch-btn{padding:10px 16px;background:#ff4444;border:none;border-radius:5px;color:#fff;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;transition:background .15s}
+#yt-fetch-btn:hover{background:#ff2222}
+#yt-fetch-btn:disabled{opacity:.4;cursor:not-allowed}
+#yt-status{font-size:10px;font-family:'Space Mono',monospace;color:var(--m2);min-height:16px;margin-bottom:12px}
+#yt-paste-area{margin-bottom:12px;display:none}
+#yt-paste-area p{font-size:10px;color:var(--m2);font-family:'Space Mono',monospace;margin-bottom:6px}
+#yt-paste{width:100%;min-height:100px;padding:10px 12px;background:var(--s1);border:0.5px solid var(--bd);border-radius:5px;color:var(--txt);font-size:11px;font-family:'Space Mono',monospace;resize:vertical;outline:none;line-height:1.6}
+#yt-paste:focus{border-color:#ff4444}
+.yt-section-label{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.yt-section-label::after{content:'';flex:1;height:0.5px;background:var(--bd)}
+#yt-transcript-box{background:var(--s1);border:0.5px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:12px;display:none}
+#yt-transcript-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--m2);font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;text-align:left;letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center}
+#yt-transcript-text{padding:12px 14px;font-size:11px;color:#585450;font-family:'Space Mono',monospace;line-height:1.7;max-height:180px;overflow-y:auto;display:none;border-top:0.5px solid var(--bd)}
+#yt-analyze-btn{width:100%;padding:11px;background:rgba(255,68,68,.1);border:0.5px solid #ff444440;border-radius:5px;color:#ff4444;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;margin-bottom:4px;display:none}
+#yt-analyze-btn:hover{background:rgba(255,68,68,.18);border-color:#ff4444}
+#yt-ideas{display:none}
+.yt-idea-card{background:var(--s1);border:0.5px solid var(--bd);border-radius:8px;padding:14px 16px;margin-bottom:8px;animation:fade-in .3s ease}
+@keyframes fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.yt-idea-tag{font-size:8px;font-family:'Space Mono',monospace;padding:2px 7px;border-radius:2px;text-transform:uppercase;letter-spacing:.08em;display:inline-block;margin-bottom:6px}
+.yt-idea-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--txt);margin-bottom:6px}
+.yt-idea-body{font-size:11px;color:#7a7672;font-family:'Space Mono',monospace;line-height:1.65}
+#yt-chat-wrap{display:none;margin-top:4px}
+#yt-messages{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;max-height:400px;overflow-y:auto}
+.yt-msg{padding:10px 14px;border-radius:6px;font-size:12px;font-family:'Space Mono',monospace;line-height:1.6;animation:fade-in .2s ease}
+.yt-msg.user{background:rgba(255,68,68,.08);border:0.5px solid rgba(255,68,68,.2);color:var(--txt);align-self:flex-end;max-width:85%}
+.yt-msg.ai{background:var(--s1);border:0.5px solid var(--bd);color:#a0a0a0;align-self:flex-start;max-width:92%}
+.yt-msg.ai.loading{color:var(--muted)}
+#yt-chat-row{display:flex;gap:8px}
+#yt-chat-input{flex:1;padding:10px 12px;background:var(--s1);border:0.5px solid var(--bd);border-radius:5px;color:var(--txt);font-size:12px;font-family:'Space Mono',monospace;outline:none;transition:border-color .15s}
+#yt-chat-input:focus{border-color:#ff4444}
+#yt-send-btn{padding:10px 14px;background:#ff4444;border:none;border-radius:5px;color:#fff;font-size:13px;cursor:pointer;transition:background .15s}
+#yt-send-btn:hover{background:#ff2222}
+#yt-send-btn:disabled{opacity:.4;cursor:not-allowed}
+#yt-save-btn{display:none;width:100%;padding:10px;background:transparent;border:0.5px solid var(--bd);border-radius:5px;color:var(--m2);font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;margin-top:16px;transition:all .15s}
+#yt-save-btn:hover{border-color:#22c55e;color:#22c55e}
 </style>
 </head>
 <body>
@@ -200,6 +244,39 @@ mark{background:rgba(224,32,32,.2);color:#e02020;border-radius:2px;padding:0 1px
         <div id="doc-mod-el"></div>
       </div>
       <div id="doc-cards-wrap"></div>
+    </div>
+    <div class="view hidden" id="view-youtube" style="overflow-y:auto">
+      <div id="yt-inner">
+        <div id="yt-title-bar">YouTube Lab — Transcription & Analyse IA</div>
+        <div id="yt-url-row">
+          <input id="yt-url" type="text" placeholder="https://youtube.com/watch?v=..."/>
+          <select id="yt-lang"><option value="fr">FR</option><option value="en">EN</option></select>
+          <button id="yt-fetch-btn" onclick="ytFetch()">Fetch</button>
+        </div>
+        <div id="yt-status"></div>
+        <div id="yt-paste-area">
+          <p>Colle la transcription manuellement :</p>
+          <textarea id="yt-paste" placeholder="Colle ici le texte de la transcription YouTube..."></textarea>
+          <button onclick="ytUsePaste()" style="margin-top:6px;padding:7px 14px;background:var(--s2);border:0.5px solid var(--bd);border-radius:4px;color:var(--m2);font-size:9px;font-family:'Space Mono',monospace;cursor:pointer;text-transform:uppercase;letter-spacing:.06em">Utiliser ce texte</button>
+        </div>
+        <div id="yt-transcript-box">
+          <button id="yt-transcript-toggle" onclick="ytToggleTranscript()">
+            <span>TRANSCRIPTION BRUTE</span><span id="yt-toggle-icon">▼</span>
+          </button>
+          <div id="yt-transcript-text"></div>
+        </div>
+        <button id="yt-analyze-btn" onclick="ytAnalyze()">⚡ Analyser avec l'IA</button>
+        <div id="yt-ideas"></div>
+        <div id="yt-chat-wrap">
+          <div class="yt-section-label">Chat avec l'IA sur cette vidéo</div>
+          <div id="yt-messages"></div>
+          <div id="yt-chat-row">
+            <input id="yt-chat-input" type="text" placeholder="Pose une question sur cette vidéo..." onkeydown="if(event.key==='Enter'&&!event.shiftKey)ytSend()"/>
+            <button id="yt-send-btn" onclick="ytSend()">↑</button>
+          </div>
+        </div>
+        <button id="yt-save-btn" onclick="ytSave()">💾 Sauvegarder dans Google Docs</button>
+      </div>
     </div>
     <div class="view hidden" id="view-mindmap" style="overflow:hidden;padding-bottom:0">
       <canvas id="bg-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.25"></canvas>
@@ -291,6 +368,7 @@ function showView(state,data){
   else if(state==='section') renderSection(data);
   else if(state==='doc') renderDoc(data);
   else if(state==='mindmap') initMindmap();
+  else if(state==='youtube') initYoutubeLab();
 }
 
 function restoreView(state){
@@ -355,6 +433,7 @@ function renderHome(){
 
 function clickSection(s){
   if(s.id==='conspiracy'){ curSection=s; navigate('mindmap',null); return; }
+  if(s.id==='youtube'){ curSection=s; navigate('youtube',null); return; }
   curSection=s;
   navigate('section',null);
   loadSection(s.id);
@@ -801,6 +880,196 @@ function syncAll(){
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(){var d=new Date();var h=d.getHours();return h<12?'Bonjour.':h<18?'Bon après-midi.':'Bonsoir.';}
 
+/* ── YOUTUBE LAB ── */
+var ytTranscript='';
+var ytChatHistory=[];
+var ytVideoId='';
+
+function initYoutubeLab(){
+  document.getElementById('yt-url').value='';
+  document.getElementById('yt-status').textContent='';
+}
+
+function ytExtractId(url){
+  var m=url.match(/[?&]v=([^&]+)/)||url.match(/youtu\.be\/([^?&]+)/)||url.match(/shorts\/([^?&]+)/);
+  return m?m[1]:null;
+}
+
+function ytFetch(){
+  var url=document.getElementById('yt-url').value.trim();
+  var lang=document.getElementById('yt-lang').value;
+  var id=ytExtractId(url);
+  if(!id){document.getElementById('yt-status').textContent='URL invalide.';return;}
+  ytVideoId=id;
+  var btn=document.getElementById('yt-fetch-btn');
+  btn.disabled=true;btn.textContent='...';
+  document.getElementById('yt-status').textContent='Récupération de la transcription...';
+  document.getElementById('yt-paste-area').style.display='none';
+  fetch('/transcript?v='+id+'&lang='+lang)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      btn.disabled=false;btn.textContent='Fetch';
+      if(data.error==='no_transcript'||!data.text){
+        document.getElementById('yt-status').textContent='Pas de transcription auto. Colle-la manuellement :';
+        document.getElementById('yt-paste-area').style.display='block';
+        return;
+      }
+      ytTranscript=data.text;
+      ytShowTranscript(data.text);
+    })
+    .catch(function(){
+      btn.disabled=false;btn.textContent='Fetch';
+      document.getElementById('yt-status').textContent='Erreur réseau. Colle la transcription manuellement :';
+      document.getElementById('yt-paste-area').style.display='block';
+    });
+}
+
+function ytUsePaste(){
+  var t=document.getElementById('yt-paste').value.trim();
+  if(!t) return;
+  ytTranscript=t;
+  document.getElementById('yt-paste-area').style.display='none';
+  ytShowTranscript(t);
+}
+
+function ytShowTranscript(text){
+  document.getElementById('yt-status').textContent='✓ Transcription prête ('+text.split(' ').length+' mots)';
+  document.getElementById('yt-transcript-text').textContent=text;
+  document.getElementById('yt-transcript-box').style.display='block';
+  document.getElementById('yt-analyze-btn').style.display='block';
+  ytChatHistory=[];
+  document.getElementById('yt-messages').innerHTML='';
+  document.getElementById('yt-ideas').style.display='none';
+  document.getElementById('yt-ideas').innerHTML='';
+  document.getElementById('yt-chat-wrap').style.display='none';
+  document.getElementById('yt-save-btn').style.display='none';
+}
+
+function ytToggleTranscript(){
+  var el=document.getElementById('yt-transcript-text');
+  var icon=document.getElementById('yt-toggle-icon');
+  var open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  icon.textContent=open?'▼':'▲';
+}
+
+function ytAnalyze(){
+  var btn=document.getElementById('yt-analyze-btn');
+  btn.disabled=true;btn.textContent='⏳ Analyse en cours...';
+  var ideasEl=document.getElementById('yt-ideas');
+  ideasEl.style.display='block';
+  ideasEl.innerHTML='<div style="font-size:10px;font-family:Space Mono,monospace;color:var(--muted);padding:12px 0">Analyse IA en cours...</div>';
+
+  var prompt='Tu es un assistant d\'analyse de vidéo. Voici la transcription d\'une vidéo YouTube :\n\n'+ytTranscript.slice(0,8000)+'\n\nAnalyse ce contenu et retourne un JSON UNIQUEMENT (sans markdown, sans backticks) avec cette structure exacte :\n{"themes":[{"titre":"...","description":"...","couleur":"#hexcolor"}],"insights":[{"texte":"..."}],"citations":[{"texte":"..."}],"questions":[{"texte":"..."}]}\n\nThèmes : 3-5 grands thèmes abordés. Insights : 4-6 idées clés retenues. Citations : 2-3 phrases marquantes. Questions : 3-4 questions que soulève cette vidéo. Réponds uniquement avec le JSON.';
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1500,
+      messages:[{role:'user',content:prompt}]
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    btn.disabled=false;btn.textContent='⚡ Analyser avec l\'IA';
+    var raw=data.content&&data.content[0]&&data.content[0].text||'{}';
+    var clean=raw.replace(/```json|```/g,'').trim();
+    try{
+      var parsed=JSON.parse(clean);
+      ytRenderIdeas(parsed);
+      ytChatHistory=[{role:'user',content:'Voici la transcription : '+ytTranscript.slice(0,6000)},{role:'assistant',content:'J\'ai analysé cette vidéo. Je suis prêt à répondre à tes questions.'}];
+      document.getElementById('yt-chat-wrap').style.display='block';
+      document.getElementById('yt-save-btn').style.display='block';
+    }catch(e){
+      ideasEl.innerHTML='<div style="font-size:11px;color:var(--muted);font-family:Space Mono,monospace">'+esc(raw)+'</div>';
+    }
+  })
+  .catch(function(err){
+    btn.disabled=false;btn.textContent='⚡ Analyser avec l\'IA';
+    ideasEl.innerHTML='<div style="font-size:10px;color:#e02020;font-family:Space Mono,monospace">Erreur : '+esc(err.message)+'</div>';
+  });
+}
+
+function ytRenderIdeas(data){
+  var el=document.getElementById('yt-ideas');el.innerHTML='';
+  var colors={'themes':'#ff4444','insights':'#f59e0b','citations':'#a855f7','questions':'#3b82f6'};
+  var labels={'themes':'Thème','insights':'Insight','citations':'Citation','questions':'Question'};
+
+  function section(key,items){
+    if(!items||!items.length) return;
+    var label=document.createElement('div');label.className='yt-section-label';label.textContent=labels[key]+'s';el.appendChild(label);
+    items.forEach(function(item){
+      var card=document.createElement('div');card.className='yt-idea-card';
+      var color=colors[key]||'#ff4444';
+      var tagHtml='<span class="yt-idea-tag" style="background:'+color+'18;color:'+color+';border:0.5px solid '+color+'40">'+labels[key].toUpperCase()+'</span>';
+      var titleHtml=item.titre?'<div class="yt-idea-title">'+esc(item.titre)+'</div>':'';
+      var bodyText=item.description||item.texte||'';
+      var bodyHtml=bodyText?'<div class="yt-idea-body">'+esc(bodyText)+'</div>':'';
+      card.innerHTML=tagHtml+titleHtml+bodyHtml;
+      el.appendChild(card);
+    });
+  }
+
+  section('themes',data.themes);
+  section('insights',data.insights);
+  section('citations',data.citations);
+  section('questions',data.questions);
+}
+
+function ytSend(){
+  var input=document.getElementById('yt-chat-input');
+  var msg=input.value.trim();if(!msg) return;
+  input.value='';
+  var msgs=document.getElementById('yt-messages');
+  var sendBtn=document.getElementById('yt-send-btn');
+  sendBtn.disabled=true;
+
+  var userDiv=document.createElement('div');userDiv.className='yt-msg user';userDiv.textContent=msg;msgs.appendChild(userDiv);
+  var aiDiv=document.createElement('div');aiDiv.className='yt-msg ai loading';aiDiv.textContent='...';msgs.appendChild(aiDiv);
+  msgs.scrollTop=msgs.scrollHeight;
+
+  ytChatHistory.push({role:'user',content:msg});
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:'Tu es un assistant qui aide à analyser et comprendre le contenu d\'une vidéo YouTube. Sois concis, précis et pertinent. Réponds en français.',
+      messages:ytChatHistory
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    sendBtn.disabled=false;
+    var reply=data.content&&data.content[0]&&data.content[0].text||'Pas de réponse.';
+    aiDiv.className='yt-msg ai';aiDiv.textContent=reply;
+    ytChatHistory.push({role:'assistant',content:reply});
+    msgs.scrollTop=msgs.scrollHeight;
+  })
+  .catch(function(err){
+    sendBtn.disabled=false;
+    aiDiv.className='yt-msg ai';aiDiv.textContent='Erreur : '+err.message;
+    msgs.scrollTop=msgs.scrollHeight;
+  });
+}
+
+function ytSave(){
+  if(!ytTranscript) return;
+  var content='=== YOUTUBE LAB ===\n\nTranscription :\n'+ytTranscript.slice(0,3000);
+  var xhr=new XMLHttpRequest();
+  xhr.open('POST',GAS,true);
+  xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
+  var btn=document.getElementById('yt-save-btn');
+  btn.textContent='Sauvegarde...';
+  xhr.onload=function(){btn.textContent='✓ Sauvegardé';setTimeout(function(){btn.textContent='💾 Sauvegarder dans Google Docs';},2000);};
+  xhr.onerror=function(){btn.textContent='✓ Sauvegardé';};
+  xhr.send(JSON.stringify({docId:'1p2TtShpX6ra94637lwGiZ0QrjtzT7Ttn',content:content,title:'YouTube — '+new Date().toLocaleDateString('fr-FR')}));
+}
+
 /* ── INIT ── */
 window.addEventListener('load',function(){
   document.getElementById('srch-input').addEventListener('input',function(){doSearch(this.value);});
@@ -845,6 +1114,7 @@ window.addEventListener('load',function(){
 
 function getFallbackSections(){
   return [
+    {id:'youtube',label:'YouTube Lab',icon:'▶',color:'#ff4444',special:'youtube',docCount:0},
     {id:'conspiracy',label:'Conspiration',icon:'◈',color:'#e02020',special:'mindmap',docCount:10},
     {id:'sante',label:'Santé / Bio',icon:'◉',color:'#22c55e',docCount:0},
     {id:'tech',label:'Tech',icon:'◈',color:'#00b8d4',docCount:0},
