@@ -332,11 +332,8 @@ function updateBC(){
 
 /* ── HOME ── */
 function renderHome(){
-  var d=new Date();
-  var h=d.getHours();
-  var gr=h<12?'Bonjour.':h<18?'Bon après-midi.':'Bonsoir.';
-  document.getElementById('home-greeting').textContent=gr;
-  document.getElementById('home-date').textContent=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+  document.getElementById('home-greeting').style.display='none';
+  document.getElementById('home-date').style.display='none';
   var grid=document.getElementById('sections-grid');grid.innerHTML='';
   sections.forEach(function(s){
     var card=document.createElement('div');
@@ -374,13 +371,22 @@ function renderSection(data){
 
 function loadSection(id){
   fetch(GAS+'?action=section&id='+id,{redirect:'follow'})
-    .then(function(r){return r.json();})
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
     .then(function(data){
-      if(data.error){document.getElementById('docs-list').innerHTML='<div class="docs-empty">Erreur : '+data.error+'</div>';return;}
-      curSection=Object.assign(curSection||{},data);
+      if(data.error){
+        document.getElementById('docs-list').innerHTML='<div class="docs-empty">GAS : '+esc(data.error)+'</div>';
+        return;
+      }
+      if(curSection) curSection=Object.assign(curSection,data);
+      searchCache[id]=data;
       renderDocs(data.docs||[]);
     })
-    .catch(function(){document.getElementById('docs-list').innerHTML='<div class="docs-empty">Impossible de charger. Vérifie ta connexion.</div>';});
+    .catch(function(err){
+      document.getElementById('docs-list').innerHTML='<div class="docs-empty" style="font-size:10px;line-height:1.8">Erreur : '+esc(err.message||'?')+'<br><br>Vérifie que le GAS est bien déployé<br>et accessible publiquement.</div>';
+    });
 }
 
 function renderDocs(docs){
