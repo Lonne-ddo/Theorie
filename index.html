@@ -962,7 +962,7 @@ function ytAnalyze(){
 
   var prompt='Tu es un assistant d\'analyse de vidéo. Voici la transcription d\'une vidéo YouTube :\n\n'+ytTranscript.slice(0,8000)+'\n\nAnalyse ce contenu et retourne un JSON UNIQUEMENT (sans markdown, sans backticks) avec cette structure exacte :\n{"themes":[{"titre":"...","description":"...","couleur":"#hexcolor"}],"insights":[{"texte":"..."}],"citations":[{"texte":"..."}],"questions":[{"texte":"..."}]}\n\nThèmes : 3-5 grands thèmes abordés. Insights : 4-6 idées clés retenues. Citations : 2-3 phrases marquantes. Questions : 3-4 questions que soulève cette vidéo. Réponds uniquement avec le JSON.';
 
-  fetch('https://api.anthropic.com/v1/messages',{
+  fetch('/claude',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -1032,7 +1032,7 @@ function ytSend(){
 
   ytChatHistory.push({role:'user',content:msg});
 
-  fetch('https://api.anthropic.com/v1/messages',{
+  fetch('/claude',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
